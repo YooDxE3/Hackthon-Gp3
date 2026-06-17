@@ -3,6 +3,7 @@ package hackthon.grupo3.spring.model;
 import hackthon.grupo3.spring.model.enums.Fase;
 import hackthon.grupo3.spring.model.enums.StatusPartida;
 import jakarta.persistence.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
@@ -14,11 +15,12 @@ public class Partida {
     private Long id;
 
     @ManyToOne
-    private Selecao mandate;
+    private Selecao mandante;
 
     @ManyToOne
     private Selecao visitante;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime dataHora;
 
     private String estadio;
@@ -43,12 +45,12 @@ public class Partida {
         this.id = id;
     }
 
-    public Selecao getMandate() {
-        return mandate;
+    public Selecao getMandante() {
+        return mandante;
     }
 
-    public void setMandate(Selecao mandate) {
-        this.mandate = mandate;
+    public void setMandante(Selecao mandante) {
+        this.mandante = mandante;
     }
 
     public Selecao getVisitante() {
