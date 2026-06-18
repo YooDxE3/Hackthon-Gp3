@@ -1,5 +1,7 @@
 package hackthon.grupo3.spring.config;
 
+import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -10,7 +12,15 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 import static org.springframework.security.authorization.SingleResultAuthorizationManager.permitAll;
 
@@ -18,16 +28,31 @@ import static org.springframework.security.authorization.SingleResultAuthorizati
 @EnableWebSecurity
 public class SecurityConfig {
 
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
+    public JwtEncoder jwtEncoder() {
+        SecretKey chave = new SecretKeySpec(jwtSecret.getBytes(), "HmacSHA256");
+        return new NimbusJwtEncoder(new ImmutableSecret<>(chave));
+    }
+
+    @Bean
+    public JwtDecoder jwtDecoder() {
+        SecretKey chave = new SecretKeySpec(jwtSecret.getBytes(), "HmacSHA256");
+        return NimbusJwtDecoder.withSecretKey(chave).macAlgorithm(MacAlgorithm.HS256).build();
+    }
+
+    @Bean
     @Order(1)
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/api/*")
+                .securityMatcher("/api/**")
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests( auth -> auth
@@ -44,8 +69,8 @@ public class SecurityConfig {
     public SecurityFilterChain webFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/css/**", "/js/**", "/img/**").permitAll()
-                        .requestMatchers("/selecoes/**", "partidas/**").hasRole("ADMIN")
+                        .requestMatchers("/login", "/css/**", "/js/**", "/img/**", "/error").permitAll()
+                        .requestMatchers("/selecoes/**", "/partidas/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
