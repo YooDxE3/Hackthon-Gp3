@@ -31,7 +31,7 @@ public class PartidaController {
 
     @GetMapping("/{id}")
     public String listar(@PathVariable Long id, Model model) {
-        model.addAttribute("partida", service.listar(id));
+        model.addAttribute("partida", service.buscarPorId(id));
         model.addAttribute("selecoes", selecaoService.listar());
         model.addAttribute("fases", Fase.values());
         return "partida/form";
