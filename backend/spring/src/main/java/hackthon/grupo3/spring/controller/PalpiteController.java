@@ -1,63 +1,47 @@
 package hackthon.grupo3.spring.controller;
 
+import hackthon.grupo3.spring.dto.PalpiteRequest;
+import hackthon.grupo3.spring.dto.PalpiteResponse;
+import hackthon.grupo3.spring.exception.RecursoNaoEncontradoException;
 import hackthon.grupo3.spring.model.Palpite;
+import hackthon.grupo3.spring.model.Usuario;
+import hackthon.grupo3.spring.repository.UsuarioRepository;
 import hackthon.grupo3.spring.service.PalpiteService;
-import hackthon.grupo3.spring.service.PartidaService;
-import hackthon.grupo3.spring.service.UsuarioService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-@Controller
-@RequestMapping("palpites")
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/palpites")
 public class PalpiteController {
 
-    @Autowired
-    private PalpiteService palpiteService;
+    private final PalpiteService service;
+    private final UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private UsuarioService usuarioService;
-
-    @Autowired
-    private PartidaService partidaService;
-
-    @GetMapping
-    public String listar(Model model) {
-        model.addAttribute("palpites", palpiteService.listar());
-        return "palpite/list";
+    public PalpiteController(PalpiteService service, UsuarioRepository usuarioRepository) {
+        this.service = service;
+        this.usuarioRepository = usuarioRepository;
     }
 
-    @GetMapping("/{id}")
-    public String listar(@PathVariable Long id, Model model) {
-        model.addAttribute("palpite", palpiteService.buscarPorId(id));
-        model.addAttribute("usuarios", usuarioService.listar());
-        model.addAttribute("partidas", partidaService.listar());
-        return "palpite/form";
+    @PostMapping
+    public PalpiteResponse salvar(@RequestBody PalpiteRequest req, Authentication authentication) {
+        Usuario usuario = usuarioLogado(authentication);
+        Palpite palpite = service.registrarOuEditar(usuario, req);
+        return PalpiteResponse.de(palpite);
     }
 
-    @GetMapping("/novo")
-    public String abrirForm(Palpite palpite, Model model) {
-        model.addAttribute("usuarios", usuarioService.listar());
-        model.addAttribute("partidas", partidaService.listar());
-        return "palpite/form";
+    @GetMapping("/meus")
+    public List<PalpiteResponse> meus(Authentication authentication) {
+        Usuario usuario = usuarioLogado(authentication);
+        return service.listarDoUsuario(usuario.getId()).stream()
+                .map(PalpiteResponse::de)
+                .toList();
     }
 
-    @PostMapping("/salvar")
-    public String salvar(Palpite palpite, Model model) {
-        palpiteService.salvar(palpite);
-        return "redirect:/palpites";
-    }
-
-    @GetMapping("/remover/{id}")
-    public String remover(@PathVariable Long id, Model model) {
-        palpiteService.remover(id);
-        return "redirect:/palpites";
-    }
-
-    @GetMapping("/usuario/{usuarioId}")
-    public String listarPorUsuario(@PathVariable Long usuarioId, Model model) {
-        model.addAttribute("palpites", palpiteService.listarPorUsuario(usuarioId));
-        return "palpite/list";
+    private Usuario usuarioLogado(Authentication authentication) {
+        String email = authentication.getName();
+        return usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuario logado nao encontrado"));
     }
 }
