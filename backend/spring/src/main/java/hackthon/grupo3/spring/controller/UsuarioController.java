@@ -24,7 +24,7 @@ public class UsuarioController {
         return "usuario/list";
     }
 
-    @PostMapping("{id}/bloqueio")
+    @PostMapping("/{id}/bloqueio")
     public String alternarBloqueio(@PathVariable Long id) {
         usuarioService.alternarBloqueio(id);
         return "redirect:/usuarios";

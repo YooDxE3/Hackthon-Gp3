@@ -36,16 +36,14 @@ public class UsuarioService implements UserDetailsService {
         return usuarioRepository.save(usuario);
     }
 
-    public List<Usuario> listar() {
-        return usuarioRepository.findAll();
-    }
-
     public Usuario buscarPorId(Long id) {
         return usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
     }
 
     public Usuario salvar(Usuario usuario) {
+        // Atenção: este método salva sem criptografar a senha.
+        // Se for usado para edição, a regra de senha precisará ser tratada.
         return usuarioRepository.save(usuario);
     }
 
@@ -57,7 +55,6 @@ public class UsuarioService implements UserDetailsService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
 
-        // Inverte o status atual (se true vira false, se false vira true)
         usuario.setBloqueado(!usuario.getBloqueado());
         usuarioRepository.save(usuario);
     }
