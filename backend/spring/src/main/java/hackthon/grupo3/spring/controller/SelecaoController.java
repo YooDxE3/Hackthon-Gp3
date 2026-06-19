@@ -25,7 +25,7 @@ public class SelecaoController {
 
     @GetMapping("/{id}")
     public String listar(@PathVariable Long id, Model model) {
-        model.addAttribute("selecao", service.listar(id));
+        model.addAttribute("selecao", service.buscarPorId(id));
         return "selecao/form";
     }
 

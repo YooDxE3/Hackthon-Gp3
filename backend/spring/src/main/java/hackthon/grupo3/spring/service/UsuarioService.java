@@ -8,6 +8,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UsuarioService implements UserDetailsService {
 
@@ -31,7 +33,35 @@ public class UsuarioService implements UserDetailsService {
         }
 
         usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
-
         return usuarioRepository.save(usuario);
+    }
+
+    public List<Usuario> listar() {
+        return usuarioRepository.findAll();
+    }
+
+    public Usuario buscarPorId(Long id) {
+        return usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+    }
+
+    public Usuario salvar(Usuario usuario) {
+        return usuarioRepository.save(usuario);
+    }
+
+    public Usuario bloquear(Long id) {
+        Usuario usuario = buscarPorId(id);
+        usuario.setBloqueado(true);
+        return usuarioRepository.save(usuario);
+    }
+
+    public Usuario desbloquear(Long id) {
+        Usuario usuario = buscarPorId(id);
+        usuario.setBloqueado(false);
+        return usuarioRepository.save(usuario);
+    }
+
+    public void remover(Long id) {
+        usuarioRepository.deleteById(id);
     }
 }
