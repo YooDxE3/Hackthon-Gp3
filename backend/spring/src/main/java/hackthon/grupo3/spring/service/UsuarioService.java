@@ -57,8 +57,27 @@ public class UsuarioService implements UserDetailsService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
 
-        // Inverte o status atual (se true vira false, se false vira true)
         usuario.setBloqueado(!usuario.getBloqueado());
         usuarioRepository.save(usuario);
+    }
+
+    public Usuario bloquear(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        usuario.setBloqueado(true);
+        return usuarioRepository.save(usuario);
+    }
+
+    public Usuario desbloquear(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        usuario.setBloqueado(false);
+        return usuarioRepository.save(usuario);
+    }
+
+    public void remover(Long id) {
+        usuarioRepository.deleteById(id);
     }
 }
