@@ -88,7 +88,6 @@ export default function MatchDetailScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#111827" />
@@ -98,7 +97,6 @@ export default function MatchDetailScreen() {
       </View>
 
       <View style={styles.content}>
-        {/* Match Info */}
         <View style={styles.infoBox}>
           <Text style={styles.faseText}>{partida.fase}</Text>
           <Text style={styles.dateText}>{formatDate(partida.dataHora)}</Text>
@@ -106,10 +104,7 @@ export default function MatchDetailScreen() {
             <Ionicons name="location" size={14} /> {partida.estadio || 'Estádio a definir'}
           </Text>
         </View>
-
-        {/* Teams and Inputs */}
         <View style={styles.matchContainer}>
-          {/* Mandante */}
           <View style={styles.teamSection}>
             <View style={styles.flagPlaceholder}>
               {partida.mandante?.bandeiraUrl ? (
@@ -133,10 +128,7 @@ export default function MatchDetailScreen() {
               />
             )}
           </View>
-
           <Text style={styles.vsText}>X</Text>
-
-          {/* Visitante */}
           <View style={styles.teamSection}>
             <View style={styles.flagPlaceholder}>
               {partida.visitante?.bandeiraUrl ? (
@@ -161,8 +153,6 @@ export default function MatchDetailScreen() {
             )}
           </View>
         </View>
-
-        {/* Submit Button */}
         {!isEncerrada && (
           <TouchableOpacity 
             style={[styles.submitButton, submitting && styles.submitButtonDisabled]} 

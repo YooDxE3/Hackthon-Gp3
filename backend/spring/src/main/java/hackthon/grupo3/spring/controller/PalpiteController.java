@@ -40,8 +40,8 @@ public class PalpiteController {
     }
 
     private Usuario usuarioLogado(Authentication authentication) {
-        String email = authentication.getName();
-        return usuarioRepository.findByEmail(email)
+        String idStr = authentication.getName();
+        return usuarioRepository.findById(Long.parseLong(idStr))
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Usuario logado nao encontrado"));
     }
 }

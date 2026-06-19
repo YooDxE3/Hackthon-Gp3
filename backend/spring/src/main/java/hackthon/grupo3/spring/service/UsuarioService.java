@@ -40,6 +40,10 @@ public class UsuarioService implements UserDetailsService {
         return usuarioRepository.findAll();
     }
 
+    public List<Usuario> obterRanking() {
+        return usuarioRepository.findAllByOrderByPontuacaoTotalDescPlacaresExatosDesc();
+    }
+
     public Usuario buscarPorId(Long id) {
         return usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));

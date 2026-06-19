@@ -21,11 +21,16 @@ export const salvarPalpite = async (palpite: PalpiteRequest): Promise<any> => {
 };
 
 export const buscarMeusPalpites = async (): Promise<any[]> => {
-  const token = await AsyncStorage.getItem('jwt_token');
-  const response = await api.get('/palpites/meus', {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
-  return response.data;
+  try {
+    const token = await AsyncStorage.getItem('jwt_token');
+    const response = await api.get('/palpites/meus', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    return response.data;
+  } catch (error: any) {
+    console.log("ERRO REAL DA API PALPITES:", error.response?.data || error.message);
+    throw error;
+  }
 };
