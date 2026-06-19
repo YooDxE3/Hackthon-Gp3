@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::section})}">
+<body>
+<section>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Dashboard Geral</h1>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-3">
+            <div class="card bg-success text-white shadow-sm h-100 border-0 rounded-4">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase fw-bold opacity-75">Ativos (24h)</h6>
+                    <h2 class="display-5 mb-0 fw-bold" th:text="${usuariosAtivos}">0</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-primary text-white shadow-sm h-100 border-0 rounded-4">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase fw-bold opacity-75">Total de Usuários</h6>
+                    <h2 class="display-5 mb-0 fw-bold" th:text="${totalUsuarios}">0</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark shadow-sm h-100 border-0 rounded-4">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase fw-bold opacity-75">Partidas Encerradas</h6>
+                    <h2 class="display-5 mb-0 fw-bold" th:text="${partidasEncerradas}">0</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-info text-dark shadow-sm h-100 border-0 rounded-4">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase fw-bold opacity-75">Seleções Cadastradas</h6>
+                    <h2 class="display-5 mb-0 fw-bold" th:text="${totalSelecoes}">0</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

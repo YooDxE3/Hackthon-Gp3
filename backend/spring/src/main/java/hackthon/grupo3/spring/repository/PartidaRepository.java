@@ -12,4 +12,6 @@ public interface PartidaRepository extends JpaRepository<Partida, Long> {
     List<Partida> findAllByOrderByDataHoraAsc();
 
     List<Partida> findByStatus(StatusPartida status);
+
+    long countByStatus(hackthon.grupo3.spring.model.enums.StatusPartida status);
 }

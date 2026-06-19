@@ -42,8 +42,6 @@ public class UsuarioService implements UserDetailsService {
     }
 
     public Usuario salvar(Usuario usuario) {
-        // Atenção: este método salva sem criptografar a senha.
-        // Se for usado para edição, a regra de senha precisará ser tratada.
         return usuarioRepository.save(usuario);
     }
 
@@ -51,11 +49,29 @@ public class UsuarioService implements UserDetailsService {
         return usuarioRepository.findAll();
     }
 
+    // Método usado pelo UsuarioController (Painel Web Thymeleaf)
     public void alternarBloqueio(Long id) {
-        Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
-
+        Usuario usuario = buscarPorId(id);
         usuario.setBloqueado(!usuario.getBloqueado());
         usuarioRepository.save(usuario);
+    }
+
+    // Método usado pelo UsuarioApi (Mobile REST)
+    public Usuario bloquear(Long id) {
+        Usuario usuario = buscarPorId(id);
+        usuario.setBloqueado(true);
+        return usuarioRepository.save(usuario);
+    }
+
+    // Método usado pelo UsuarioApi (Mobile REST)
+    public Usuario desbloquear(Long id) {
+        Usuario usuario = buscarPorId(id);
+        usuario.setBloqueado(false);
+        return usuarioRepository.save(usuario);
+    }
+
+    // Método usado pelo UsuarioApi (Mobile REST)
+    public void remover(Long id) {
+        usuarioRepository.deleteById(id);
     }
 }

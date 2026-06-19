@@ -16,6 +16,7 @@
             <td th:text="${p.fase}"></td>
             <td th:text="${p.status}"></td>
             <td>
+                <a th:href="@{/partidas/{id}/resultado(id=${p.id})}" class="btn btn-sm btn-warning">Resultado</a>
                 <a th:href="@{/partidas/{id}(id=${p.id})}" class="btn btn-sm btn-secondary">Editar</a>
                 <a th:href="@{/partidas/remover/{id}(id=${p.id})}" class="btn btn-sm btn-danger">Remover</a>
             </td>
