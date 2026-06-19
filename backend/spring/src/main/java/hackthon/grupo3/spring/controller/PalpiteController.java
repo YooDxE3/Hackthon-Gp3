@@ -34,14 +34,17 @@ public class PalpiteController {
     @GetMapping("/meus")
     public List<PalpiteResponse> meus(Authentication authentication) {
         Usuario usuario = usuarioLogado(authentication);
-        return service.listarDoUsuario(usuario.getId()).stream()
+
+        return service.listarDoUsuario(usuario.getId())
+                .stream()
                 .map(PalpiteResponse::de)
                 .toList();
     }
 
     private Usuario usuarioLogado(Authentication authentication) {
-        String email = authentication.getName();
-        return usuarioRepository.findByEmail(email)
+        Long usuarioId = Long.valueOf(authentication.getName());
+
+        return usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Usuario logado nao encontrado"));
     }
 }
