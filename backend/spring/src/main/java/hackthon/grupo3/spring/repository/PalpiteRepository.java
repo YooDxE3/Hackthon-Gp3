@@ -8,9 +8,9 @@ import java.util.Optional;
 
 public interface PalpiteRepository extends JpaRepository<Palpite, Long> {
 
-    List<Palpite> findByPartidaId(Long partidaId);
-
     List<Palpite> findByUsuarioId(Long usuarioId);
+
+    List<Palpite> findByPartidaId(Long partidaId);
 
     Optional<Palpite> findByUsuarioIdAndPartidaId(Long usuarioId, Long partidaId);
 }
