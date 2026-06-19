@@ -6,7 +6,6 @@ export default function MyPredictionsScreen() {
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Meus Palpites</Text>
       <Text style={styles.subtitle}>Veja o seu histórico de palpites e pontuações</Text>
-      {/* Lista de palpites do usuário */}
     </SafeAreaView>
   );
 }

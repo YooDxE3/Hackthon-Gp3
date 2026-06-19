@@ -6,7 +6,6 @@ export default function RankingScreen() {
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Ranking Global</Text>
       <Text style={styles.subtitle}>Quem é o melhor do Bolão?</Text>
-      {/* Tabela de ranking global */}
     </SafeAreaView>
   );
 }

@@ -24,8 +24,6 @@ export default function ProfileScreen() {
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Meu Perfil</Text>
       <Text style={styles.subtitle}>Gerencie suas informações</Text>
-      
-      {/* Botões de Perfil */}
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Sair do App</Text>
       </TouchableOpacity>

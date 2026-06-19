@@ -16,14 +16,14 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="matches"
+        name="partidas"
         options={{
           title: 'Partidas',
           tabBarIcon: ({ color }) => <FontAwesome name="calendar" size={22} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="my-predictions"
+        name="meusPalpites"
         options={{
           title: 'Palpites',
           tabBarIcon: ({ color }) => <FontAwesome name="list-alt" size={22} color={color} />,
@@ -37,7 +37,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="perfil"
         options={{
           title: 'Perfil',
           tabBarIcon: ({ color }) => <FontAwesome name="user" size={24} color={color} />,

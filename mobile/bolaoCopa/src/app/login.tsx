@@ -33,9 +33,6 @@ export default function LoginScreen() {
                 Alert.alert("Atenção!", "Falha ao realizar login, tente novamente.");
                 return;
             }
-
-            // O redirecionamento no repositório de exemplo usava (tabs)/home.
-            // Aqui nosso "home" será (tabs)/index (ou apenas /(tabs))
             router.replace("/(tabs)");
         } catch (error) {
             Alert.alert("Erro", "Falha na conexão com a API.");
@@ -48,7 +45,6 @@ export default function LoginScreen() {
             style={styles.container}
         >
             <View style={styles.innerContainer}>
-                {/* Ícone de bola de futebol para o app do Bolão */}
                 <Ionicons 
                     name="football-outline" 
                     size={64} 
