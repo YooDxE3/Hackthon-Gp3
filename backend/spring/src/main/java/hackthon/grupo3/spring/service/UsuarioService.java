@@ -49,19 +49,16 @@ public class UsuarioService implements UserDetailsService {
         return usuarioRepository.save(usuario);
     }
 
-    public Usuario bloquear(Long id) {
-        Usuario usuario = buscarPorId(id);
-        usuario.setBloqueado(true);
-        return usuarioRepository.save(usuario);
+    public List<Usuario> listarTodos() {
+        return usuarioRepository.findAll();
     }
 
-    public Usuario desbloquear(Long id) {
-        Usuario usuario = buscarPorId(id);
-        usuario.setBloqueado(false);
-        return usuarioRepository.save(usuario);
-    }
+    public void alternarBloqueio(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
 
-    public void remover(Long id) {
-        usuarioRepository.deleteById(id);
+        // Inverte o status atual (se true vira false, se false vira true)
+        usuario.setBloqueado(!usuario.getBloqueado());
+        usuarioRepository.save(usuario);
     }
 }
