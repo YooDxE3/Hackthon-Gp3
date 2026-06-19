@@ -20,7 +20,7 @@ public class ResultadoController {
 
     @GetMapping("/{id}/resultado")
     public String abrirForm(@PathVariable Long id, Model model) {
-        model.addAttribute("partida", partidaService.listar(id));
+        model.addAttribute("partida", partidaService.buscarPorId(id));
         return "partida/resultado";
     }
 
