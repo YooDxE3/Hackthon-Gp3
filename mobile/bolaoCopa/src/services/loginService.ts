@@ -14,6 +14,7 @@ export async function logar(email: string, senha: string) {
 
         if (resposta.status === 200 && resposta.data.token) {
             await AsyncStorage.setItem('jwt_token', resposta.data.token);
+            await AsyncStorage.setItem('user_email', email);
             return resposta.data.token;
         }
 
@@ -26,4 +27,5 @@ export async function logar(email: string, senha: string) {
 
 export async function logout() {
     await AsyncStorage.removeItem('jwt_token');
+    await AsyncStorage.removeItem('user_email');
 }
