@@ -1,19 +1,15 @@
 package hackthon.grupo3.spring.api;
 
-
-
 import hackthon.grupo3.spring.model.Partida;
 import hackthon.grupo3.spring.service.PartidaService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/partidas")
-@Service
 public class PartidaApi {
 
     private final PartidaService service;
@@ -46,10 +42,10 @@ public class PartidaApi {
     @PutMapping("/{id}/resultado")
     public ResponseEntity<Partida> lancarResultado(
             @PathVariable Long id,
-            @RequestParam Integer golsA,
-            @RequestParam Integer golsB
+            @RequestParam Integer golsMandante,
+            @RequestParam Integer golsVisitante
     ) {
-        return ResponseEntity.ok(service.lancarResultado(id, golsA, golsB));
+        return ResponseEntity.ok(service.lancarResultado(id, golsMandante, golsVisitante));
     }
 
     @DeleteMapping("/{id}")
