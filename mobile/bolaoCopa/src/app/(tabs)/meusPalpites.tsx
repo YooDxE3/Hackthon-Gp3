@@ -41,37 +41,36 @@ export default function MyPredictionsScreen() {
     loadPalpites();
   }, []);
 
+  const totalPontos = palpites.reduce((acc, p) => acc + (p.pontosObtidos || 0), 0);
+  const encerrados = palpites.filter(p => p.statusPartida === 'ENCERRADA').length;
+
   const renderPalpite = ({ item }: { item: MeuPalpite }) => {
     const isEncerrada = item.statusPartida === 'ENCERRADA';
 
     return (
       <View style={styles.card}>
-        <View style={styles.cardHeader}>
+        <View style={styles.cardTop}>
           <Text style={styles.confrontoText}>{item.confronto}</Text>
-          <View style={[styles.statusBadge, isEncerrada && styles.statusBadgeEncerrada]}>
-            <Text style={[styles.statusText, isEncerrada && styles.statusTextEncerrada]}>
-              {item.statusPartida}
+          <View style={[styles.statusDot, isEncerrada ? styles.dotGray : styles.dotGreen]} />
+        </View>
+
+        <View style={styles.scoreRow}>
+          <Text style={styles.scoreValue}>{item.golsMandante}</Text>
+          <Text style={styles.scoreSep}>—</Text>
+          <Text style={styles.scoreValue}>{item.golsVisitante}</Text>
+        </View>
+
+        {isEncerrada ? (
+          <View style={styles.resultRow}>
+            <Text style={styles.pointsText}>
+              {item.pontosObtidos > 0 ? `+${item.pontosObtidos} pts` : '0 pts'}
             </Text>
+            {item.criterioAplicado && (
+              <Text style={styles.criterioText}>{item.criterioAplicado}</Text>
+            )}
           </View>
-        </View>
-
-        <View style={styles.scoreBoard}>
-          <Text style={styles.palpiteLabel}>SEU PALPITE</Text>
-          <Text style={styles.scoreText}>
-            {item.golsMandante} x {item.golsVisitante}
-          </Text>
-        </View>
-
-        {isEncerrada && (
-          <View style={styles.pointsContainer}>
-            <View style={styles.pointsIcon}>
-              <Ionicons name="star" size={16} color="#F59E0B" />
-            </View>
-            <View>
-              <Text style={styles.pointsEarned}>+{item.pontosObtidos} Pontos</Text>
-              <Text style={styles.pointsReason}>{item.criterioAplicado || 'Finalizado'}</Text>
-            </View>
-          </View>
+        ) : (
+          <Text style={styles.pendingText}>Aguardando resultado</Text>
         )}
       </View>
     );
@@ -80,19 +79,37 @@ export default function MyPredictionsScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.title}>Meus Palpites</Text>
-        <Text style={styles.subtitle}>Acompanhe seu desempenho</Text>
+        <Text style={styles.pageTitle}>Meus palpites</Text>
       </View>
+
+      {!loading && palpites.length > 0 && (
+        <View style={styles.statsRow}>
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{palpites.length}</Text>
+            <Text style={styles.statLabel}>Palpites</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{encerrados}</Text>
+            <Text style={styles.statLabel}>Encerrados</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={[styles.statValue, styles.statValueGreen]}>{totalPontos}</Text>
+            <Text style={styles.statLabel}>Pontos</Text>
+          </View>
+        </View>
+      )}
 
       {loading ? (
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#0274DF" />
+          <ActivityIndicator size="large" color="#1B7A4E" />
         </View>
       ) : palpites.length === 0 ? (
         <View style={styles.centered}>
-          <Ionicons name="document-text-outline" size={60} color="#CBD5E1" />
-          <Text style={styles.emptyText}>Nenhum palpite ainda.</Text>
-          <Text style={styles.emptySubtext}>Vá em Partidas e faça o seu primeiro palpite!</Text>
+          <Ionicons name="clipboard-outline" size={48} color="#D1D9E0" />
+          <Text style={styles.emptyTitle}>Nenhum palpite ainda</Text>
+          <Text style={styles.emptySub}>Vá em Jogos e registre seu primeiro palpite!</Text>
         </View>
       ) : (
         <FlatList
@@ -102,7 +119,7 @@ export default function MyPredictionsScreen() {
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0274DF']} />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#1B7A4E']} />
           }
         />
       )}
@@ -113,128 +130,144 @@ export default function MyPredictionsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#FAFAF8',
   },
   header: {
-    padding: 20,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-    marginBottom: 10,
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 8,
   },
-  title: {
+  pageTitle: {
     fontSize: 28,
-    fontWeight: '800',
-    color: '#111827',
+    fontWeight: '700',
+    color: '#1A2B3C',
   },
-  subtitle: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginTop: 4,
+  statsRow: {
+    flexDirection: 'row',
+    marginHorizontal: 24,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 20,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#F0F2F4',
+  },
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#1A2B3C',
+  },
+  statValueGreen: {
+    color: '#1B7A4E',
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#8896A6',
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  statDivider: {
+    width: 1,
+    backgroundColor: '#F0F2F4',
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: 40,
   },
-  emptyText: {
-    fontSize: 18,
+  emptyTitle: {
+    fontSize: 17,
     fontWeight: '600',
-    color: '#4B5563',
-    marginTop: 15,
+    color: '#1A2B3C',
+    marginTop: 16,
   },
-  emptySubtext: {
+  emptySub: {
     fontSize: 14,
-    color: '#9CA3AF',
-    marginTop: 5,
+    color: '#6B7D8E',
+    marginTop: 4,
     textAlign: 'center',
   },
   listContent: {
-    padding: 16,
+    paddingHorizontal: 24,
     paddingBottom: 40,
   },
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3,
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#F0F2F4',
   },
-  cardHeader: {
+  cardTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   confrontoText: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#111827',
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#4A5B6C',
+    flex: 1,
   },
-  statusBadge: {
-    backgroundColor: '#EFF6FF',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginLeft: 8,
   },
-  statusBadgeEncerrada: {
-    backgroundColor: '#F3F4F6',
+  dotGreen: {
+    backgroundColor: '#1B7A4E',
   },
-  statusText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#3B82F6',
+  dotGray: {
+    backgroundColor: '#C8CDD2',
   },
-  statusTextEncerrada: {
-    color: '#6B7280',
-  },
-  scoreBoard: {
-    alignItems: 'center',
-    backgroundColor: '#F9FAFB',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
-  },
-  palpiteLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#9CA3AF',
-    letterSpacing: 1,
-    marginBottom: 4,
-  },
-  scoreText: {
-    fontSize: 32,
-    fontWeight: '900',
-    color: '#111827',
-    letterSpacing: 4,
-  },
-  pointsContainer: {
+  scoreRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFBEB',
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#FEF3C7',
+    justifyContent: 'center',
+    marginBottom: 12,
   },
-  pointsIcon: {
-    marginRight: 12,
+  scoreValue: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#1A2B3C',
   },
-  pointsEarned: {
+  scoreSep: {
+    fontSize: 24,
+    color: '#C8CDD2',
+    marginHorizontal: 16,
+    fontWeight: '300',
+  },
+  resultRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+    padding: 10,
+    borderRadius: 10,
+  },
+  pointsText: {
     fontSize: 14,
-    fontWeight: '800',
-    color: '#B45309',
+    fontWeight: '700',
+    color: '#1B7A4E',
   },
-  pointsReason: {
+  criterioText: {
     fontSize: 12,
-    color: '#D97706',
+    color: '#8896A6',
     fontWeight: '500',
-  }
+  },
+  pendingText: {
+    fontSize: 13,
+    color: '#8896A6',
+    textAlign: 'center',
+    fontWeight: '500',
+  },
 });

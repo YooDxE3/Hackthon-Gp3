@@ -1,46 +1,73 @@
 import { Tabs } from 'expo-router';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { Ionicons } from '@expo/vector-icons';
+import { View, Text, Platform } from 'react-native';
 
 export default function TabLayout() {
   return (
     <Tabs screenOptions={{ 
-        tabBarActiveTintColor: '#007AFF',
-        tabBarInactiveTintColor: '#8e8e93',
+        tabBarActiveTintColor: '#1B7A4E',
+        tabBarInactiveTintColor: '#8896A6',
+        tabBarShowLabel: true,
         headerShown: false,
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '600',
+          marginTop: -2,
+        },
+        tabBarStyle: {
+          backgroundColor: '#FFFFFF',
+          borderTopWidth: 1,
+          borderTopColor: '#F0F2F4',
+          height: Platform.OS === 'ios' ? 88 : 64,
+          paddingTop: 8,
+          paddingBottom: Platform.OS === 'ios' ? 28 : 8,
+          elevation: 0,
+          shadowOpacity: 0,
+        }
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <FontAwesome name="home" size={24} color={color} />,
+          title: 'Início',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "home" : "home-outline"} size={22} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="partidas"
         options={{
-          title: 'Partidas',
-          tabBarIcon: ({ color }) => <FontAwesome name="calendar" size={22} color={color} />,
+          title: 'Jogos',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "football" : "football-outline"} size={22} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="meusPalpites"
         options={{
           title: 'Palpites',
-          tabBarIcon: ({ color }) => <FontAwesome name="list-alt" size={22} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "clipboard" : "clipboard-outline"} size={22} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="ranking"
         options={{
           title: 'Ranking',
-          tabBarIcon: ({ color }) => <FontAwesome name="trophy" size={22} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "podium" : "podium-outline"} size={22} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="perfil"
         options={{
           title: 'Perfil',
-          tabBarIcon: ({ color }) => <FontAwesome name="user" size={24} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "person-circle" : "person-circle-outline"} size={24} color={color} />
+          ),
         }}
       />
     </Tabs>

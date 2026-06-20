@@ -1,20 +1,35 @@
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, RefreshControl, Image } from 'react-native';
 import { useState, useEffect, useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { buscarRanking, UsuarioRanking } from '../../services/rankingService';
+import { api } from '@/services/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function RankingScreen() {
   const [ranking, setRanking] = useState<UsuarioRanking[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const loadRanking = async () => {
+  const loadData = async () => {
     try {
-      const data = await buscarRanking();
-      setRanking(data);
+      const email = await AsyncStorage.getItem('user_email');
+      const [rankingData, usuariosResponse] = await Promise.all([
+        buscarRanking(),
+        api.get('/usuarios').catch(() => null)
+      ]);
+      
+      setRanking(rankingData);
+
+      if (email && usuariosResponse?.data) {
+        const loggedUser = usuariosResponse.data.find((u: any) => u.email === email);
+        if (loggedUser) {
+          setCurrentUserId(loggedUser.id);
+        }
+      }
     } catch (error) {
-      console.error('Erro ao buscar ranking:', error);
+      console.error('Erro ao buscar dados do ranking:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -22,53 +37,56 @@ export default function RankingScreen() {
   };
 
   useEffect(() => {
-    loadRanking();
+    loadData();
   }, []);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    loadRanking();
+    loadData();
   }, []);
 
-  const getMedalColor = (index: number) => {
-    if (index === 0) return '#FBBF24'; // Ouro
-    if (index === 1) return '#9CA3AF'; // Prata
-    if (index === 2) return '#B45309'; // Bronze
+  const getMedalEmoji = (pos: number) => {
+    if (pos === 0) return '🥇';
+    if (pos === 1) return '🥈';
+    if (pos === 2) return '🥉';
     return null;
   };
 
   const renderRankingItem = ({ item, index }: { item: UsuarioRanking; index: number }) => {
-    const medalColor = getMedalColor(index);
+    const isCurrentUser = item.id === currentUserId;
+    const medal = getMedalEmoji(index);
     const isTop3 = index < 3;
 
     return (
-      <View style={[styles.card, isTop3 && styles.topCard]}>
-        <View style={styles.positionContainer}>
-          {medalColor ? (
-            <FontAwesome5 name="medal" size={24} color={medalColor} />
+      <View style={[styles.row, isCurrentUser && styles.rowHighlighted, isTop3 && styles.rowTop3]}>
+        <View style={styles.posCol}>
+          {medal ? (
+            <Text style={styles.medal}>{medal}</Text>
           ) : (
-            <Text style={styles.positionText}>{index + 1}º</Text>
+            <Text style={styles.posNumber}>{index + 1}</Text>
           )}
         </View>
 
-        <View style={styles.avatarPlaceholder}>
+        <View style={styles.avatarCol}>
           {item.avatarUrl ? (
-            <Image source={{ uri: item.avatarUrl }} style={styles.avatarImage} />
+            <Image source={{ uri: item.avatarUrl }} style={styles.avatar} />
           ) : (
-            <Ionicons name="person" size={20} color="#9CA3AF" />
+            <View style={styles.avatarFallback}>
+              <Text style={styles.avatarInitial}>{item.nome.charAt(0).toUpperCase()}</Text>
+            </View>
           )}
         </View>
 
-        <View style={styles.infoContainer}>
-          <Text style={styles.nameText} numberOfLines={1}>{item.nome}</Text>
-          <Text style={styles.statsText}>
-            <Ionicons name="football" size={12} /> {item.placaresExatos} exatos
+        <View style={styles.nameCol}>
+          <Text style={[styles.nameText, isTop3 && styles.nameTextBold]} numberOfLines={1}>
+            {item.nome}
           </Text>
+          {isCurrentUser && <Text style={styles.youLabel}>Você</Text>}
         </View>
 
-        <View style={styles.scoreContainer}>
-          <Text style={styles.scoreText}>{item.pontuacaoTotal}</Text>
-          <Text style={styles.scoreLabel}>Pts</Text>
+        <View style={styles.pointsCol}>
+          <Text style={[styles.pointsText, isTop3 && styles.pointsTextTop]}>{item.pontuacaoTotal}</Text>
+          <Text style={styles.ptsLabel}>pts</Text>
         </View>
       </View>
     );
@@ -77,19 +95,18 @@ export default function RankingScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.title}>Ranking Global</Text>
-        <Text style={styles.subtitle}>Os melhores do Bolão</Text>
+        <Text style={styles.pageTitle}>Ranking</Text>
       </View>
 
       {loading ? (
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#0274DF" />
+          <ActivityIndicator size="large" color="#1B7A4E" />
         </View>
       ) : ranking.length === 0 ? (
         <View style={styles.centered}>
-          <FontAwesome5 name="trophy" size={60} color="#CBD5E1" />
-          <Text style={styles.emptyText}>Ninguém pontuou ainda.</Text>
-          <Text style={styles.emptySubtext}>Faça seus palpites e assuma a liderança!</Text>
+          <Ionicons name="trophy-outline" size={48} color="#D1D9E0" />
+          <Text style={styles.emptyTitle}>Ninguém pontuou ainda</Text>
+          <Text style={styles.emptySub}>Faça seus palpites e saia na frente!</Text>
         </View>
       ) : (
         <FlatList
@@ -98,8 +115,15 @@ export default function RankingScreen() {
           renderItem={renderRankingItem}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          ListHeaderComponent={
+            <View style={styles.tableHeader}>
+              <Text style={[styles.thText, {width: 40}]}>#</Text>
+              <Text style={[styles.thText, {flex: 1, marginLeft: 52}]}>Jogador</Text>
+              <Text style={[styles.thText, {width: 60, textAlign: 'right'}]}>Pontos</Text>
+            </View>
+          }
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0274DF']} />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#1B7A4E']} />
           }
         />
       )}
@@ -110,118 +134,142 @@ export default function RankingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#FAFAF8',
   },
   header: {
-    padding: 20,
-    backgroundColor: '#111827',
-    borderBottomWidth: 1,
-    borderBottomColor: '#1F2937',
-    marginBottom: 10,
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 8,
   },
-  title: {
+  pageTitle: {
     fontSize: 28,
-    fontWeight: '800',
-    color: '#FFFFFF',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#9CA3AF',
-    marginTop: 4,
+    fontWeight: '700',
+    color: '#1A2B3C',
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: 40,
   },
-  emptyText: {
-    fontSize: 18,
+  emptyTitle: {
+    fontSize: 17,
     fontWeight: '600',
-    color: '#4B5563',
-    marginTop: 15,
+    color: '#1A2B3C',
+    marginTop: 16,
   },
-  emptySubtext: {
+  emptySub: {
     fontSize: 14,
-    color: '#9CA3AF',
-    marginTop: 5,
-    textAlign: 'center',
+    color: '#6B7D8E',
+    marginTop: 4,
   },
   listContent: {
-    padding: 16,
+    paddingHorizontal: 24,
     paddingBottom: 40,
   },
-  card: {
+  tableHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E8EB',
+    marginBottom: 4,
   },
-  topCard: {
-    borderWidth: 1,
-    borderColor: '#FEF3C7',
-    backgroundColor: '#FFFBDB',
+  thText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#8896A6',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-  positionContainer: {
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F5F6F8',
+  },
+  rowHighlighted: {
+    backgroundColor: '#EBF5F0',
+    marginHorizontal: -8,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderBottomWidth: 0,
+  },
+  rowTop3: {
+    // subtle emphasis
+  },
+  posCol: {
     width: 40,
     alignItems: 'center',
-    justifyContent: 'center',
   },
-  positionText: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#6B7280',
+  medal: {
+    fontSize: 20,
   },
-  avatarPlaceholder: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#E5E7EB',
+  posNumber: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#8896A6',
+  },
+  avatarCol: {
+    marginRight: 12,
+  },
+  avatar: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+  },
+  avatarFallback: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#E5E8EB',
     justifyContent: 'center',
     alignItems: 'center',
-    marginHorizontal: 12,
-    overflow: 'hidden',
   },
-  avatarImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
+  avatarInitial: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#4A5B6C',
   },
-  infoContainer: {
+  nameCol: {
     flex: 1,
   },
   nameText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 4,
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#1A2B3C',
   },
-  statsText: {
+  nameTextBold: {
+    fontWeight: '700',
+  },
+  youLabel: {
+    fontSize: 11,
+    color: '#1B7A4E',
+    fontWeight: '600',
+    marginTop: 1,
+  },
+  pointsCol: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    width: 60,
+    justifyContent: 'flex-end',
+  },
+  pointsText: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#1A2B3C',
+    marginRight: 3,
+  },
+  pointsTextTop: {
+    fontWeight: '800',
+    color: '#1B7A4E',
+  },
+  ptsLabel: {
     fontSize: 12,
-    color: '#6B7280',
+    color: '#8896A6',
     fontWeight: '500',
   },
-  scoreContainer: {
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-    paddingLeft: 10,
-  },
-  scoreText: {
-    fontSize: 22,
-    fontWeight: '900',
-    color: '#0274DF',
-  },
-  scoreLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#9CA3AF',
-    textTransform: 'uppercase',
-  }
 });

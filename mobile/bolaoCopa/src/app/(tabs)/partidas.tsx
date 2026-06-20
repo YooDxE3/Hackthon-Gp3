@@ -1,6 +1,6 @@
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, RefreshControl, Image } from 'react-native';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, RefreshControl, Image, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { buscarPartidas, Partida } from '../../services/partidaService';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,6 +9,8 @@ export default function MatchesScreen() {
   const [matches, setMatches] = useState<Partida[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedFase, setSelectedFase] = useState<string>('Todas');
+  const [selectedStatus, setSelectedStatus] = useState<string>('Todos');
   const router = useRouter();
 
   const loadMatches = async () => {
@@ -35,103 +37,156 @@ export default function MatchesScreen() {
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
-      return new Intl.DateTimeFormat('pt-BR', {
-        day: '2-digit',
-        month: 'short',
-        hour: '2-digit',
-        minute: '2-digit'
-      }).format(date).replace('de', '').trim();
+      const day = date.getDate();
+      const month = date.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
+      const time = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      return { day: String(day), month, time };
     } catch {
-      return dateString;
+      return { day: '--', month: '---', time: '--:--' };
     }
   };
 
-  const renderMatchCard = ({ item }: { item: Partida }) => (
-    <TouchableOpacity 
-      style={styles.card}
-      activeOpacity={0.8}
-      onPress={() => router.push(`/match/${item.id}`)}
-    >
-      <View style={styles.cardHeader}>
-        <View style={styles.badgeFase}>
-          <Text style={styles.faseText}>{item.fase}</Text>
-        </View>
-        <Text style={styles.dateText}>
-          <Ionicons name="calendar-outline" size={14} color="#6B7280" /> {formatDate(item.dataHora)}
-        </Text>
-      </View>
+  const fases = useMemo(() => {
+    const unicas = Array.from(new Set(matches.map(m => m.fase)));
+    return ['Todas', ...unicas];
+  }, [matches]);
 
-      <View style={styles.teamsContainer}>
-        <View style={styles.team}>
-          <View style={styles.flagPlaceholder}>
-            {item.mandante?.bandeiraUrl ? (
-              <Image source={{ uri: item.mandante.bandeiraUrl }} style={styles.flagImage} />
-            ) : (
-              <Text style={styles.flagEmoji}>🏴</Text>
-            )}
+  const filteredMatches = useMemo(() => {
+    let result = matches;
+    if (selectedFase !== 'Todas') {
+      result = result.filter(m => m.fase === selectedFase);
+    }
+    if (selectedStatus !== 'Todos') {
+      result = result.filter(m => m.status === selectedStatus);
+    }
+    return result;
+  }, [matches, selectedFase, selectedStatus]);
+
+  const statuses = ['Todos', 'AGENDADA', 'EM_ANDAMENTO', 'ENCERRADA'];
+  const statusLabels: Record<string, string> = {
+    'Todos': 'Todos',
+    'AGENDADA': 'Agendada',
+    'EM_ANDAMENTO': 'Ao vivo',
+    'ENCERRADA': 'Encerrada',
+  };
+
+  const renderMatchCard = ({ item }: { item: Partida }) => {
+    const dt = formatDate(item.dataHora);
+    const isEncerrada = item.status === 'ENCERRADA';
+
+    return (
+      <TouchableOpacity 
+        style={styles.card}
+        activeOpacity={0.7}
+        onPress={() => router.push(`/match/${item.id}`)}
+      >
+        <View style={styles.cardLeft}>
+          <View style={styles.cardDate}>
+            <Text style={styles.cardDay}>{dt.day}</Text>
+            <Text style={styles.cardMonth}>{dt.month}</Text>
           </View>
-          <Text style={styles.teamName} numberOfLines={1}>{item.mandante?.nome || 'Time A'}</Text>
         </View>
 
-        <View style={styles.scoreBoard}>
-          {item.status === 'ENCERRADA' ? (
-            <View style={styles.scorePillEncerrada}>
-              <Text style={styles.scoreText}>{item.golsMandante} - {item.golsVisitante}</Text>
-              <Text style={styles.statusText}>FIM</Text>
+        <View style={styles.cardCenter}>
+          <View style={styles.teamLine}>
+            <View style={styles.miniFlag}>
+              {item.mandante?.bandeiraUrl ? (
+                <Image source={{ uri: item.mandante.bandeiraUrl }} style={styles.flagImg} />
+              ) : <Text style={{fontSize: 14}}>🏴</Text>}
+            </View>
+            <Text style={styles.teamName} numberOfLines={1}>{item.mandante?.nome || 'Time A'}</Text>
+            {isEncerrada && <Text style={styles.goalText}>{item.golsMandante}</Text>}
+          </View>
+          <View style={styles.teamLine}>
+            <View style={styles.miniFlag}>
+              {item.visitante?.bandeiraUrl ? (
+                <Image source={{ uri: item.visitante.bandeiraUrl }} style={styles.flagImg} />
+              ) : <Text style={{fontSize: 14}}>🏳️</Text>}
+            </View>
+            <Text style={styles.teamName} numberOfLines={1}>{item.visitante?.nome || 'Time B'}</Text>
+            {isEncerrada && <Text style={styles.goalText}>{item.golsVisitante}</Text>}
+          </View>
+        </View>
+
+        <View style={styles.cardRight}>
+          {isEncerrada ? (
+            <View style={styles.encerradaPill}>
+              <Text style={styles.encerradaText}>Fim</Text>
             </View>
           ) : (
-            <View style={styles.scorePill}>
-              <Text style={styles.vsText}>VS</Text>
-              <Text style={styles.palpiteAction}>Palpitar</Text>
-            </View>
+            <Text style={styles.cardTime}>{dt.time}</Text>
           )}
         </View>
-
-        <View style={styles.team}>
-          <View style={styles.flagPlaceholder}>
-            {item.visitante?.bandeiraUrl ? (
-              <Image source={{ uri: item.visitante.bandeiraUrl }} style={styles.flagImage} />
-            ) : (
-              <Text style={styles.flagEmoji}>🏳️</Text>
-            )}
-          </View>
-          <Text style={styles.teamName} numberOfLines={1}>{item.visitante?.nome || 'Time B'}</Text>
-        </View>
-      </View>
-
-      <View style={styles.cardFooter}>
-        <Ionicons name="location-outline" size={14} color="#9CA3AF" />
-        <Text style={styles.stadiumText}>{item.estadio || 'Estádio a definir'}</Text>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.title}>Jogos da Copa</Text>
-        <Text style={styles.subtitle}>Faça seus palpites nas próximas partidas</Text>
+        <Text style={styles.pageTitle}>Jogos</Text>
+        <Text style={styles.matchCount}>{filteredMatches.length} partidas</Text>
       </View>
+
+      {!loading && matches.length > 0 && (
+        <View>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterRow}
+          >
+            {fases.map((fase) => (
+              <TouchableOpacity
+                key={fase}
+                style={[styles.filterPill, selectedFase === fase && styles.filterPillActive]}
+                onPress={() => setSelectedFase(fase)}
+              >
+                <Text style={[styles.filterText, selectedFase === fase && styles.filterTextActive]}>
+                  {fase}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterRow}
+          >
+            {statuses.map((status) => (
+              <TouchableOpacity
+                key={status}
+                style={[styles.statusPill, selectedStatus === status && styles.statusPillActive]}
+                onPress={() => setSelectedStatus(status)}
+              >
+                <Text style={[styles.statusText, selectedStatus === status && styles.statusTextActive]}>
+                  {statusLabels[status]}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
 
       {loading ? (
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#0274DF" />
+          <ActivityIndicator size="large" color="#1B7A4E" />
         </View>
-      ) : matches.length === 0 ? (
+      ) : filteredMatches.length === 0 ? (
         <View style={styles.centered}>
-          <Ionicons name="football-outline" size={60} color="#CBD5E1" />
-          <Text style={styles.emptyText}>Nenhuma partida encontrada.</Text>
-          <Text style={styles.emptySubtext}>Peça ao admin para cadastrar os jogos.</Text>
+          <Ionicons name="football-outline" size={48} color="#D1D9E0" />
+          <Text style={styles.emptyTitle}>Nenhuma partida encontrada</Text>
+          <Text style={styles.emptySub}>Ajuste os filtros ou aguarde novos jogos.</Text>
         </View>
       ) : (
         <FlatList
-          data={matches}
+          data={filteredMatches}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderMatchCard}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0274DF']} />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#1B7A4E']} />
           }
         />
       )}
@@ -142,173 +197,175 @@ export default function MatchesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#FAFAF8',
   },
   header: {
-    padding: 20,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-    marginBottom: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 16,
   },
-  title: {
+  pageTitle: {
     fontSize: 28,
-    fontWeight: '800',
-    color: '#111827',
+    fontWeight: '700',
+    color: '#1A2B3C',
   },
-  subtitle: {
+  matchCount: {
     fontSize: 14,
-    color: '#6B7280',
-    marginTop: 4,
+    color: '#8896A6',
+    fontWeight: '500',
+  },
+  filterRow: {
+    paddingHorizontal: 24,
+    paddingBottom: 12,
+  },
+  filterPill: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#E5E8EB',
+  },
+  filterPillActive: {
+    backgroundColor: '#1A2B3C',
+    borderColor: '#1A2B3C',
+  },
+  filterText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#4A5B6C',
+  },
+  filterTextActive: {
+    color: '#FFFFFF',
+  },
+  statusPill: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginRight: 8,
+  },
+  statusPillActive: {
+    backgroundColor: '#EBF5F0',
+  },
+  statusText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#8896A6',
+  },
+  statusTextActive: {
+    color: '#1B7A4E',
+    fontWeight: '600',
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: 40,
   },
-  emptyText: {
-    fontSize: 18,
+  emptyTitle: {
+    fontSize: 17,
     fontWeight: '600',
-    color: '#4B5563',
-    marginTop: 15,
+    color: '#1A2B3C',
+    marginTop: 16,
   },
-  emptySubtext: {
+  emptySub: {
     fontSize: 14,
-    color: '#9CA3AF',
-    marginTop: 5,
-    textAlign: 'center',
+    color: '#6B7D8E',
+    marginTop: 4,
   },
   listContent: {
-    padding: 16,
+    paddingHorizontal: 24,
     paddingBottom: 40,
   },
   card: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#F0F2F4',
   },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  cardLeft: {
+    marginRight: 14,
+  },
+  cardDate: {
     alignItems: 'center',
-    marginBottom: 16,
+    width: 40,
   },
-  badgeFase: {
-    backgroundColor: '#EEF2FF',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  faseText: {
-    color: '#4F46E5',
-    fontSize: 12,
+  cardDay: {
+    fontSize: 20,
     fontWeight: '700',
+    color: '#1A2B3C',
+    lineHeight: 22,
   },
-  dateText: {
-    fontSize: 13,
-    color: '#6B7280',
+  cardMonth: {
+    fontSize: 12,
+    color: '#8896A6',
     fontWeight: '500',
+    textTransform: 'uppercase',
   },
-  teamsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-  },
-  team: {
+  cardCenter: {
     flex: 1,
-    alignItems: 'center',
   },
-  flagPlaceholder: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#F3F4F6',
+  teamLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  miniFlag: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#F5F6F8',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    marginRight: 8,
     overflow: 'hidden',
   },
-  flagImage: {
+  flagImg: {
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
   },
-  flagEmoji: {
-    fontSize: 28,
-  },
   teamName: {
-    fontSize: 14,
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1A2B3C',
+  },
+  goalText: {
+    fontSize: 17,
     fontWeight: '700',
-    color: '#374151',
+    color: '#1A2B3C',
+    marginLeft: 8,
+    width: 20,
     textAlign: 'center',
   },
-  scoreBoard: {
-    flex: 1,
+  cardRight: {
+    marginLeft: 12,
     alignItems: 'center',
-    justifyContent: 'center',
+    minWidth: 50,
   },
-  scorePill: {
-    backgroundColor: '#F3F4F6',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    alignItems: 'center',
-  },
-  vsText: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: '#9CA3AF',
-  },
-  palpiteAction: {
-    fontSize: 10,
+  cardTime: {
+    fontSize: 15,
     fontWeight: '700',
-    color: '#0274DF',
-    marginTop: 2,
-    textTransform: 'uppercase',
+    color: '#1B7A4E',
   },
-  scorePillEncerrada: {
-    backgroundColor: '#111827',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    alignItems: 'center',
+  encerradaPill: {
+    backgroundColor: '#F0F2F4',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 8,
   },
-  scoreText: {
-    fontSize: 18,
-    fontWeight: '900',
-    color: '#FFFFFF',
-    letterSpacing: 2,
-  },
-  statusText: {
-    fontSize: 9,
-    fontWeight: '700',
-    color: '#9CA3AF',
-    marginTop: 2,
-    textTransform: 'uppercase',
-  },
-  cardFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 16,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
-  },
-  stadiumText: {
+  encerradaText: {
     fontSize: 12,
-    color: '#9CA3AF',
-    marginLeft: 4,
-    fontWeight: '500',
-  }
+    fontWeight: '600',
+    color: '#6B7D8E',
+  },
 });
