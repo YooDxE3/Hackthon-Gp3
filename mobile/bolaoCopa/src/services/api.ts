@@ -8,6 +8,8 @@ const api = axios.create({
   timeout: 10000,
 });
 
+import { router } from 'expo-router';
+
 api.interceptors.request.use(async (config) => {
   const token = await AsyncStorage.getItem('jwt_token');
   if (token && config.headers) {
@@ -15,5 +17,21 @@ api.interceptors.request.use(async (config) => {
   }
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    // Se for um erro de autenticação ou se o usuário logado não for encontrado (ex: banco zerado)
+    if (
+      error.response?.status === 401 || 
+      (error.response?.status === 404 && error.response?.data?.erro === 'Usuario logado nao encontrado')
+    ) {
+      await AsyncStorage.removeItem('jwt_token');
+      await AsyncStorage.removeItem('user_email');
+      router.replace('/login');
+    }
+    return Promise.reject(error);
+  }
+);
 
 export { api };

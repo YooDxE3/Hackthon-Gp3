@@ -10,7 +10,7 @@ export interface UsuarioRanking {
 
 export const buscarRanking = async (): Promise<UsuarioRanking[]> => {
   try {
-    const response = await api.get('/usuarios/ranking');
+    const response = await api.get('/ranking');
     return response.data;
   } catch (error: any) {
     console.log("ERRO REAL DA API RANKING:", error.response?.data || error.message);
