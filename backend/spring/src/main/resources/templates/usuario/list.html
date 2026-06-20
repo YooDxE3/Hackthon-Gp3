@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::section})}">
+<body>
+<section>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Gestão de Usuários</h1>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body p-0">
+      <table class="table table-striped table-hover mb-0">
+        <thead class="table-dark">
+        <tr>
+          <th>ID</th>
+          <th>Nome</th>
+          <th>E-mail</th>
+          <th>Perfil</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="u : ${usuarios}">
+          <td th:text="${u.id}"></td>
+          <td th:text="${u.nome}"></td>
+          <td th:text="${u.email}"></td>
+          <td th:text="${u.perfil}"></td>
+          <td>
+            <span th:if="${u.bloqueado}" class="badge bg-danger">Bloqueado</span>
+            <span th:unless="${u.bloqueado}" class="badge bg-success">Ativo</span>
+          </td>
+          <td>
+            <form th:if="${#authentication.name != u.email}"
+                  th:action="@{/usuarios/{id}/bloqueio(id=${u.id})}"
+                  method="post" class="d-inline">
+              <button type="submit"
+                      th:class="${u.bloqueado ? 'btn btn-sm btn-success' : 'btn btn-sm btn-danger'}"
+                      th:text="${u.bloqueado ? 'Desbloquear' : 'Bloquear'}">
+              </button>
+            </form>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+</body>
+</html>

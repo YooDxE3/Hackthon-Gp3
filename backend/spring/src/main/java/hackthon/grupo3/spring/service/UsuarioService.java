@@ -50,17 +50,35 @@ public class UsuarioService implements UserDetailsService {
     }
 
     public Usuario salvar(Usuario usuario) {
+        // Atenção: este método salva sem criptografar a senha.
+        // Se for usado para edição, a regra de senha precisará ser tratada.
         return usuarioRepository.save(usuario);
     }
 
+    public List<Usuario> listarTodos() {
+        return usuarioRepository.findAll();
+    }
+
+    public void alternarBloqueio(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+
+        usuario.setBloqueado(!usuario.getBloqueado());
+        usuarioRepository.save(usuario);
+    }
+
     public Usuario bloquear(Long id) {
-        Usuario usuario = buscarPorId(id);
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
         usuario.setBloqueado(true);
         return usuarioRepository.save(usuario);
     }
 
     public Usuario desbloquear(Long id) {
-        Usuario usuario = buscarPorId(id);
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
         usuario.setBloqueado(false);
         return usuarioRepository.save(usuario);
     }
