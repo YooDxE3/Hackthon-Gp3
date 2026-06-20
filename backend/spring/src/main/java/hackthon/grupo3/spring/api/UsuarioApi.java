@@ -23,19 +23,6 @@ public class UsuarioApi {
         return ResponseEntity.ok(service.listar());
     }
 
-    @GetMapping("/ranking")
-    public ResponseEntity<?> ranking() {
-        try {
-            List<hackthon.grupo3.spring.dto.UsuarioRankingResponse> rankingList = service.obterRanking().stream()
-                    .map(hackthon.grupo3.spring.dto.UsuarioRankingResponse::de)
-                    .toList();
-            return ResponseEntity.ok(rankingList);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("ERRO: " + e.getMessage() + " | Causa: " + (e.getCause() != null ? e.getCause().getMessage() : ""));
-        }
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<Usuario> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(service.buscarPorId(id));

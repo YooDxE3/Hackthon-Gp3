@@ -59,9 +59,6 @@ public class UsuarioService implements UserDetailsService {
         return usuarioRepository.findAll();
     }
 
-    public List<Usuario> listar() {
-        return usuarioRepository.findAll();
-    }
 
     public Usuario bloquear(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
@@ -92,23 +89,4 @@ public class UsuarioService implements UserDetailsService {
         usuarioRepository.save(usuario);
     }
 
-    public Usuario bloquear(Long id) {
-        Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-        usuario.setBloqueado(true);
-        return usuarioRepository.save(usuario);
-    }
-
-    public Usuario desbloquear(Long id) {
-        Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-        usuario.setBloqueado(false);
-        return usuarioRepository.save(usuario);
-    }
-
-    public void remover(Long id) {
-        usuarioRepository.deleteById(id);
-    }
 }
