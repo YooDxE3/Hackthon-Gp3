@@ -1,14 +1,12 @@
 package hackthon.grupo3.spring.controller;
 
 import hackthon.grupo3.spring.model.Selecao;
+import hackthon.grupo3.spring.model.enums.Grupo;
 import hackthon.grupo3.spring.service.SelecaoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("selecoes")
@@ -18,8 +16,18 @@ public class SelecaoController {
     private SelecaoService service;
 
     @GetMapping
-    public String listar(Model model) {
-        model.addAttribute("selecoes", service.listar());
+    public String listar(
+            @RequestParam(required = false) Grupo grupo,
+            @RequestParam(required = false, defaultValue = "ASC") String ordem,
+            Model model) {
+
+        model.addAttribute("selecoes", service.listarFiltrado(grupo, ordem));
+
+        model.addAttribute("grupos", Grupo.values());
+
+        model.addAttribute("paramGrupo", grupo);
+        model.addAttribute("paramOrdem", ordem);
+
         return "selecao/list";
     }
 

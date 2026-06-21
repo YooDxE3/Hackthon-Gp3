@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::section})}">
+<body>
+<section>
+    <style>
+        @media (min-width: 992px) { .dash-container { max-width: 800px; margin: 0 auto; } }
+
+        .card-custom { background-color: #2A1B4E !important; border: none; border-radius: 12px; }
+        .text-primary-custom { color: #FFFFFF !important; }
+        .text-secondary-custom { color: #E5E7EB !important; }
+        .text-cyan { color: #00C2C7 !important; }
+
+        .form-control-custom {
+            background-color: #1F1135;
+            border: 1px solid #334155;
+            color: #FFFFFF;
+            border-radius: 8px;
+            padding: 12px;
+        }
+        .form-control-custom:focus {
+            background-color: #1F1135;
+            color: #FFFFFF;
+            border-color: #00C2C7;
+            box-shadow: none;
+        }
+        .form-control-custom:disabled {
+            background-color: #150b24;
+            border-color: #232d3f;
+            color: #64748b;
+        }
+
+        .btn-success-custom { background-color: #A9D700; color: #1F1135; font-weight: bold; border: none; transition: 0.2s;}
+        .btn-success-custom:hover { background-color: #8db500; color: #1F1135; transform: translateY(-2px); }
+
+        .btn-secondary-custom { background-color: transparent; border: 1px solid #E5E7EB; color: #E5E7EB; transition: 0.2s;}
+        .btn-secondary-custom:hover { background-color: #E5E7EB; color: #1F1135; }
+
+        /* Preview da Foto do Perfil */
+        .profile-preview-container {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid #00C2C7;
+            overflow: hidden;
+            margin: 0 auto 20px auto;
+            background-color: #1F1135;
+            box-shadow: 0 4px 15px rgba(0, 194, 199, 0.4);
+        }
+        .profile-preview-container img { width: 100%; height: 100%; object-fit: cover; }
+    </style>
+
+    <div class="dash-container">
+
+        <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+            <h1 class="h3 fw-bold text-primary-custom">Meu Perfil</h1>
+        </div>
+
+        <div class="card card-custom shadow-sm">
+            <div class="card-body p-4 p-md-5">
+
+                <form th:action="@{/usuarios/perfil/salvar}" th:object="${usuario}" method="post">
+                    <input type="hidden" th:field="*{id}">
+
+                    <div class="text-center mb-4">
+                        <div class="profile-preview-container">
+                            <img id="avatarPreview"
+                                 th:src="*{avatarUrl != null and !avatarUrl.isEmpty()} ? *{avatarUrl} : @{'https://ui-avatars.com/api/?name=' + *{nome} + '&background=1F1135&color=00C2C7&bold=true&size=150'}"
+                                 alt="Preview do Avatar">
+                        </div>
+                        <p class="text-secondary-custom small">Visualização da sua foto de perfil</p>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary-custom fw-bold small text-uppercase">Nome Completo</label>
+                            <input type="text" class="form-control form-control-custom" th:field="*{nome}" required id="inputNome">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary-custom fw-bold small text-uppercase">E-mail de Acesso</label>
+                            <input type="email" class="form-control form-control-custom" th:field="*{email}" disabled>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label text-secondary-custom fw-bold small text-uppercase">URL da Foto de Perfil</label>
+                            <input type="url" class="form-control form-control-custom" th:field="*{avatarUrl}" id="inputAvatar" placeholder="https://linkdafoto.com/imagem.jpg">
+                        </div>
+
+                        <div class="col-md-12 border-top border-secondary border-opacity-25 pt-4 mt-4">
+                            <label class="form-label text-secondary-custom fw-bold small text-uppercase">Alterar Senha</label>
+                            <input type="password" class="form-control form-control-custom" th:field="*{senha}" placeholder="Deixe em branco para manter a senha atual">
+                            <div class="form-text text-muted small mt-1">Só preencha este campo se realmente desejar trocar de senha de acesso.</div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-3 mt-5">
+                        <a th:href="@{/dashboard}" class="btn btn-secondary-custom rounded-pill px-4 py-2">Cancelar</a>
+                        <button type="submit" class="btn btn-success-custom rounded-pill px-5 py-2">Salvar Alterações</button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const inputAvatar = document.getElementById('inputAvatar');
+            const avatarPreview = document.getElementById('avatarPreview');
+            const inputNome = document.getElementById('inputNome');
+
+            inputAvatar.addEventListener('input', function() {
+                const url = this.value.trim();
+                if(url !== "") {
+                    avatarPreview.src = url;
+                } else {
+                    // Se apagar a URL volta para o gerador de iniciais automático
+                    const nome = encodeURIComponent(inputNome.value) || "User";
+                    avatarPreview.src = `https://ui-avatars.com/api/?name=${nome}&background=1F1135&color=00C2C7&bold=true&size=150`;
+                }
+            });
+        });
+    </script>
+</section>
+</body>
+</html>
