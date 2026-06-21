@@ -2,25 +2,90 @@
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::section})}">
 <body>
 <section>
-  <h1 class="mb-3">Seleções</h1>
-  <a th:href="@{/selecoes/novo}" class="btn btn-primary mb-3">Nova seleção</a>
-  <table class="table table-striped">
-    <thead>
-    <tr><th>ID</th><th>Nome</th><th>Código FIFA</th><th>Grupo</th><th>Ações</th></tr>
-    </thead>
-    <tbody>
-    <tr th:each="s : ${selecoes}">
-      <td th:text="${s.id}"></td>
-      <td th:text="${s.nome}"></td>
-      <td th:text="${s.codigoFifa}"></td>
-      <td th:text="${s.grupo}"></td>
-      <td>
-        <a th:href="@{/selecoes/{id}(id=${s.id})}" class="btn btn-sm btn-secondary">Editar</a>
-        <a th:href="@{/selecoes/remover/{id}(id=${s.id})}" class="btn btn-sm btn-danger">Remover</a>
-      </td>
-    </tr>
-    </tbody>
-  </table>
+  <style>
+    /* --- APLICAÇÃO DO GUIA DE ESTILOS --- */
+    @media (min-width: 992px) {
+        .dash-container { max-width: 1200px; margin: 0 auto; }
+    }
+
+    .card-custom { background-color: #2A1B4E !important; border: none; border-radius: 12px; }
+    .text-primary-custom { color: #FFFFFF !important; }
+    .text-secondary-custom { color: #E5E7EB !important; }
+    .text-cyan { color: #00C2C7 !important; }
+
+    /* Botões padronizados */
+    .btn-cyan { background-color: #00C2C7; color: #1F1135; font-weight: bold; border: none; }
+    .btn-cyan:hover { background-color: #009b9f; color: #1F1135; }
+
+    .btn-edit { background-color: transparent; border: 1px solid #00C2C7; color: #00C2C7; transition: all 0.2s; }
+    .btn-edit:hover { background-color: #00C2C7; color: #1F1135; }
+
+    .btn-delete { background-color: transparent; border: 1px solid #E60000; color: #E60000; transition: all 0.2s; }
+    .btn-delete:hover { background-color: #E60000; color: #FFFFFF; }
+
+    /* Container da Bandeira baseado no seu desenho */
+    .flag-container {
+        width: 110px;
+        height: 75px;
+        background-color: #1F1135;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border: 1px solid #334155;
+    }
+    .flag-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+  </style>
+
+  <div class="dash-container">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+      <h1 class="h3 fw-bold text-primary-custom">Seleções</h1>
+      <a th:href="@{/selecoes/novo}" class="btn btn-cyan rounded-pill px-4">Novo</a>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+
+      <div class="col" th:each="s : ${selecoes}">
+        <div class="card card-custom h-100 shadow-sm p-3">
+          <div class="d-flex w-100">
+
+            <div class="d-flex flex-column align-items-start me-3">
+              <span class="text-secondary-custom fw-bold small mb-2" th:text="${s.codigoFifa}">COD</span>
+              <div class="flag-container shadow-sm">
+                <img th:if="${s.escudoUrl != null and !s.escudoUrl.isEmpty()}" th:src="${s.escudoUrl}" alt="Bandeira">
+                <span th:unless="${s.escudoUrl != null and !s.escudoUrl.isEmpty()}" class="text-secondary-custom small">Sem imagem</span>
+              </div>
+            </div>
+
+            <div class="d-flex flex-column justify-content-between w-100">
+              <div>
+                <h5 class="fw-bold text-primary-custom mb-1" th:text="${s.nome}">Nome</h5>
+                <p class="text-secondary-custom mb-0 small">Grupo: <span class="text-cyan fw-bold fs-6" th:text="${s.grupo}">X</span></p>
+              </div>
+
+              <div class="d-flex justify-content-end gap-2 mt-3">
+                <a th:href="@{/selecoes/{id}(id=${s.id})}" class="btn btn-sm btn-edit rounded-pill px-3">Editar</a>
+                <a th:href="@{/selecoes/remover/{id}(id=${s.id})}" class="btn btn-sm btn-delete rounded-pill px-3" onclick="return confirm('Tem certeza que deseja excluir esta seleção?');">Excluir</a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div th:if="${#lists.isEmpty(selecoes)}" class="text-center mt-5">
+      <p class="text-secondary-custom fs-5">Nenhuma seleção cadastrada no sistema.</p>
+    </div>
+
+  </div>
 </section>
 </body>
 </html>

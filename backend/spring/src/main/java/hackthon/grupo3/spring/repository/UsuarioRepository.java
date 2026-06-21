@@ -13,4 +13,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     boolean existsByEmail(String email);
 
     long countByUltimoAcessoAfter(LocalDateTime data);
+
+    long countByBloqueadoTrue();
 }

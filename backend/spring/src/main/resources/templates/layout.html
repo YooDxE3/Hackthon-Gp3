@@ -1,19 +1,111 @@
 <!DOCTYPE html>
-<html lang="pt-br" xmlns:th="http://www.thymeleaf.org" th:fragment="layout(conteudo)">
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org" th:fragment="layout(content)">
 <head>
     <meta charset="UTF-8">
-    <title>Bolão Copa 2026 - Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - Bolão 2026</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #1F1135; /* Roxo Escuro Profundo (Background Principal) */
+            color: #FFFFFF; /* Texto Principal */
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            background-color: #2A1B4E; /* Roxo levemente mais claro (Hierarquia de Superfícies) */
+            min-height: 70px;
+            border-bottom: 2px solid #00C2C7; /* Linha de destaque em Ciano Vibrante */
+        }
+
+        /* Logo fixada absolutamente no centro e no topo */
+        .center-logo {
+            position: absolute;
+            left: 50%;
+            top: 10px;
+            transform: translateX(-50%);
+            z-index: 1050;
+        }
+
+        .center-logo img {
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+            transition: transform 0.3s ease;
+            padding: 4px;
+            border-radius: 8px;
+        }
+
+        .center-logo img:hover {
+            transform: scale(1.05);
+        }
+
+        .nav-link {
+            color: #E5E7EB !important; /* Texto Secundário (Cinza Claro) */
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.9rem;
+            margin-right: 15px;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .nav-link:hover {
+            color: #00C2C7 !important; /* Ciano Vibrante no Hover */
+        }
+
+        .nav-link.active {
+            color: #00C2C7 !important; /* Ciano Vibrante na Aba Ativa */
+            border-bottom: 2px solid #00C2C7;
+        }
+
+        /* Botão Sair personalizado no padrão Vermelho Intenso */
+        .btn-logout {
+            background-color: #E60000;
+            color: #FFFFFF;
+            border: none;
+            transition: background-color 0.2s;
+        }
+
+        .btn-logout:hover {
+            background-color: #B30000;
+            color: #FFFFFF;
+        }
+
+        /* No mobile, cria uma separação visual e margem para os links */
+        @media (max-width: 991px) {
+            #menuPrincipal {
+                margin-top: 15px;
+                border-top: 1px solid #2A1B4E;
+                padding-top: 10px;
+            }
+            .navbar-toggler {
+                border-color: #E5E7EB;
+            }
+        }
+    </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-    <div class="container">
-        <a class="navbar-brand" href="#">Bolão 2026 Admin</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+<nav class="navbar navbar-expand-lg navbar-dark shadow-sm py-2 position-relative">
+    <div class="container-fluid px-3 px-md-4">
+
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
+
+        <div class="center-logo">
+            <a th:href="@{/dashboard}">
+                <img th:src="@{/img/logo-copa.png}" alt="Logo Copa 2026" height="80">
+            </a>
+        </div>
+
+        <div class="d-flex ms-auto order-lg-last order-1">
+            <form th:action="@{/logout}" method="post" class="m-0">
+                <button type="submit" class="btn btn-logout btn-sm px-4 rounded-pill fw-bold">Sair</button>
+            </form>
+        </div>
+
+        <div class="collapse navbar-collapse" id="menuPrincipal">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{/dashboard}">Dashboard</a>
@@ -28,15 +120,14 @@
                     <a class="nav-link" th:href="@{/usuarios}">Usuários</a>
                 </li>
             </ul>
-            <form th:action="@{/logout}" method="post" class="d-flex">
-                <button class="btn btn-outline-danger btn-sm" type="submit">Sair</button>
-            </form>
         </div>
+
     </div>
 </nav>
 
-<div class="container" th:replace="${conteudo}">
-</div>
+<main class="container-fluid py-4 px-md-5">
+    <div th:replace="${content}"></div>
+</main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

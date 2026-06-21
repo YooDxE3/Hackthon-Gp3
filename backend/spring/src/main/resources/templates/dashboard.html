@@ -1,48 +1,222 @@
 <!DOCTYPE html>
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::section})}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - Bolão 2026</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!--    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>-->
+</head>
 <body>
 <section>
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Dashboard Geral</h1>
+    <style>
+        /* --- APLICAÇÃO DO GUIA DE ESTILOS --- */
+
+        /* Centralização exclusiva para Desktop (Margin 0 auto) */
+        @media (min-width: 992px) {
+            .dash-container {
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+        }
+
+        /* Superfícies e Textos */
+        .card-custom {
+            background-color: #2A1B4E !important; /* Superfície de Cards */
+            border: none;
+        }
+
+        .text-primary-custom { color: #FFFFFF !important; }
+        .text-secondary-custom { color: #E5E7EB !important; }
+
+        /* Paleta Primária e Secundária */
+        .text-cyan { color: #00C2C7 !important; }
+        .border-cyan { border-left-color: #00C2C7 !important; }
+
+        .text-green { color: #A9D700 !important; }
+        .border-green { border-left-color: #A9D700 !important; }
+
+        .text-orange { color: #FF5A00 !important; }
+        .border-orange { border-left-color: #FF5A00 !important; }
+
+        .text-magenta { color: #FF007F !important; }
+        .border-magenta { border-left-color: #FF007F !important; }
+
+        .text-gold { color: #FFD700 !important; }
+        .text-red { color: #E60000 !important; }
+
+        /* Card de Perigo (Contas Bloqueadas) */
+        .card-danger-custom {
+            background-color: rgba(230, 0, 0, 0.1) !important;
+            border: 1px solid rgba(230, 0, 0, 0.3) !important;
+        }
+    </style>
+
+    <div class="dash-container">
+
+        <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+            <h1 class="h3 fw-bold text-primary-custom">Visão Geral do Bolão</h1>
+        </div>
+
+        <div class="row g-4 mb-5">
+
+            <div class="col-md-3">
+                <div class="card card-custom shadow-sm border-0 border-start border-cyan border-4 h-100 py-2">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div class="text-xs fw-bold text-cyan text-uppercase mb-1">
+                            Total de <br>Usuários
+                        </div>
+                        <div class="display-5 fw-bolder text-primary-custom" th:text="${totalUsuarios}">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card card-custom shadow-sm border-0 border-start border-green border-4 h-100 py-2">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div class="text-xs fw-bold text-green text-uppercase mb-1">
+                            Total de <br>Palpites
+                        </div>
+                        <div class="display-5 fw-bolder text-primary-custom" th:text="${totalPalpites}">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card card-custom shadow-sm border-0 border-start border-orange border-4 h-100 py-2">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div class="text-xs fw-bold text-orange text-uppercase mb-1">
+                            Partidas <br>Pendentes
+                        </div>
+                        <div class="display-5 fw-bolder text-primary-custom" th:text="${partidasPendentes}">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card card-custom shadow-sm border-0 border-start border-magenta border-4 h-100 py-2">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div class="text-xs fw-bold text-magenta text-uppercase mb-1">
+                            Ativos <br>(Últimas 24h)
+                        </div>
+                        <div class="display-5 fw-bolder text-primary-custom" th:text="${usuariosAtivos}">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+
+            <div class="col-md-6">
+                <div class="card card-custom shadow-sm rounded-3 h-100">
+                    <div class="card-header bg-transparent py-3 border-0">
+                        <h6 class="mb-0 fw-bold text-primary-custom">Distribuição de Partidas</h6>
+                    </div>
+                    <div class="card-body d-flex align-items-center justify-content-center" style="position: relative; height:300px;">
+
+                        <div id="chartData" style="display: none;"
+                             th:data-agendadas="${partidasAgendadas}"
+                             th:data-emandamento="${partidasEmAndamento}"
+                             th:data-encerradas="${partidasEncerradas}">
+                        </div>
+
+                        <canvas id="chartPartidas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="row g-3 h-100">
+                    <div class="col-6">
+                        <div class="card card-custom shadow-sm h-100">
+                            <div class="card-body text-center d-flex flex-column justify-content-center">
+                                <h6 class="text-secondary-custom text-uppercase fw-bold mb-3">Média de Gols / Jogo</h6>
+                                <h1 class="display-4 fw-bolder text-gold mb-0" th:text="${mediaGols}">0.0</h1>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="card card-custom shadow-sm h-100">
+                            <div class="card-body text-center d-flex flex-column justify-content-center">
+                                <h6 class="text-secondary-custom text-uppercase fw-bold mb-3">Seleções na Disputa</h6>
+                                <h1 class="display-4 fw-bolder text-cyan mb-0" th:text="${selecoesVivas}">0</h1>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="card card-danger-custom shadow-sm mt-1">
+                            <div class="card-body d-flex justify-content-between align-items-center p-4">
+                                <h6 class="text-red fw-bold text-uppercase mb-0">Contas Bloqueadas</h6>
+                                <h2 class="fw-bolder text-red mb-0" th:text="${usuariosBloqueados}">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const dataDiv = document.getElementById('chartData');
 
-    <div class="row g-4">
-        <div class="col-md-3">
-            <div class="card bg-success text-white shadow-sm h-100 border-0 rounded-4">
-                <div class="card-body">
-                    <h6 class="card-title text-uppercase fw-bold opacity-75">Ativos (24h)</h6>
-                    <h2 class="display-5 mb-0 fw-bold" th:text="${usuariosAtivos}">0</h2>
-                </div>
-            </div>
-        </div>
+            const agendadas = parseInt(dataDiv.getAttribute('data-agendadas')) || 0;
+            const emAndamento = parseInt(dataDiv.getAttribute('data-emandamento')) || 0;
+            const encerradas = parseInt(dataDiv.getAttribute('data-encerradas')) || 0;
 
-        <div class="col-md-3">
-            <div class="card bg-primary text-white shadow-sm h-100 border-0 rounded-4">
-                <div class="card-body">
-                    <h6 class="card-title text-uppercase fw-bold opacity-75">Total de Usuários</h6>
-                    <h2 class="display-5 mb-0 fw-bold" th:text="${totalUsuarios}">0</h2>
-                </div>
-            </div>
-        </div>
+            if(agendadas === 0 && emAndamento === 0 && encerradas === 0) {
+                document.getElementById('chartPartidas').parentElement.innerHTML =
+                    '<p class="text-secondary-custom text-center w-100 mt-5">Nenhuma partida registrada ainda.</p>';
+                return;
+            }
 
-        <div class="col-md-3">
-            <div class="card bg-warning text-dark shadow-sm h-100 border-0 rounded-4">
-                <div class="card-body">
-                    <h6 class="card-title text-uppercase fw-bold opacity-75">Partidas Encerradas</h6>
-                    <h2 class="display-5 mb-0 fw-bold" th:text="${partidasEncerradas}">0</h2>
-                </div>
-            </div>
-        </div>
+            // Função recursiva: verifica a cada 50ms se o Chart.js terminou de baixar
+            function renderizarGrafico() {
+                if (typeof Chart === 'undefined') {
+                    setTimeout(renderizarGrafico, 50);
+                    return;
+                }
 
-        <div class="col-md-3">
-            <div class="card bg-info text-dark shadow-sm h-100 border-0 rounded-4">
-                <div class="card-body">
-                    <h6 class="card-title text-uppercase fw-bold opacity-75">Seleções Cadastradas</h6>
-                    <h2 class="display-5 mb-0 fw-bold" th:text="${totalSelecoes}">0</h2>
-                </div>
-            </div>
-        </div>
-    </div>
+                const ctx = document.getElementById('chartPartidas').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Agendadas', 'Em Andamento', 'Encerradas'],
+                        datasets: [{
+                            data: [agendadas, emAndamento, encerradas],
+                            backgroundColor: ['#00C2C7', '#FF5A00', '#A9D700'],
+                            borderColor: '#2A1B4E',
+                            borderWidth: 3,
+                            hoverOffset: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '70%',
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    font: { weight: 'bold' },
+                                    color: '#E5E7EB'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Inicia a tentativa de renderização
+            renderizarGrafico();
+        });
+    </script>
 </section>
 </body>
 </html>
