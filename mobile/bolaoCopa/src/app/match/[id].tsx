@@ -1,127 +1,402 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Image, Alert, KeyboardAvoidingView, Platform, ScrollView, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { buscarPartidaPorId, Partida } from '../../services/partidaService';
+import { salvarPalpite, buscarMeusPalpites } from '../../services/palpiteService';
 
 export default function MatchDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  
-  const [goalsA, setGoalsA] = useState('');
-  const [goalsB, setGoalsB] = useState('');
 
-  const handleSavePrediction = () => {
-    Alert.alert('Sucesso', 'Palpite salvo com sucesso!', [
-      { text: 'OK', onPress: () => router.back() }
-    ]);
+  const [partida, setPartida] = useState<Partida | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+
+  const [golsMandante, setGolsMandante] = useState('');
+  const [golsVisitante, setGolsVisitante] = useState('');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const partidaId = Number(id);
+        const [partidaData, meusPalpitesData] = await Promise.all([
+          buscarPartidaPorId(partidaId),
+          buscarMeusPalpites().catch(() => [])
+        ]);
+        
+        setPartida(partidaData);
+
+        const existingPalpite = meusPalpitesData.find((p: any) => p.partidaId === partidaId);
+        if (existingPalpite) {
+          setGolsMandante(existingPalpite.golsMandante.toString());
+          setGolsVisitante(existingPalpite.golsVisitante.toString());
+          setIsEditing(true);
+        }
+
+      } catch (error) {
+        console.error('Erro ao buscar dados da partida:', error);
+        Alert.alert('Erro', 'Não foi possível carregar os detalhes da partida.');
+        router.back();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchData();
+    }
+  }, [id]);
+
+  const handleSubmit = async () => {
+    if (!golsMandante || !golsVisitante) {
+      Alert.alert('Atenção', 'Preencha o placar para as duas seleções.');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      await salvarPalpite({
+        partidaId: Number(id),
+        golsMandante: Number(golsMandante),
+        golsVisitante: Number(golsVisitante),
+      });
+
+      Alert.alert('Sucesso!', 'Seu palpite foi registrado!', [
+        { text: 'OK', onPress: () => router.back() }
+      ]);
+    } catch (error: any) {
+      console.error('Erro ao salvar palpite:', error);
+      Alert.alert('Erro', error.response?.data?.message || 'Falha ao salvar o palpite.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return new Intl.DateTimeFormat('pt-BR', {
+        weekday: 'long',
+        day: '2-digit',
+        month: 'long',
+        hour: '2-digit',
+        minute: '2-digit'
+      }).format(date);
+    } catch {
+      return dateString;
+    }
+  };
+
+  if (loading || !partida) {
+    return (
+      <SafeAreaView style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#09090B" />
+      </SafeAreaView>
+    );
+  }
+
+  const isEncerrada = partida.status === 'ENCERRADA';
+
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Detalhes da Partida</Text>
-      <Text style={styles.subtitle}>Partida ID: {id}</Text>
-
-      <View style={styles.predictionCard}>
-        <Text style={styles.cardTitle}>Seu Palpite</Text>
-        <View style={styles.scoreContainer}>
-          <Text style={styles.teamName}>Seleção A</Text>
-          <TextInput 
-            style={styles.scoreInput} 
-            keyboardType="number-pad"
-            value={goalsA}
-            onChangeText={setGoalsA}
-            maxLength={2}
-          />
-          <Text style={styles.vs}>X</Text>
-          <TextInput 
-            style={styles.scoreInput} 
-            keyboardType="number-pad"
-            value={goalsB}
-            onChangeText={setGoalsB}
-            maxLength={2}
-          />
-          <Text style={styles.teamName}>Seleção B</Text>
-        </View>
-
-        <TouchableOpacity style={styles.saveButton} onPress={handleSavePrediction}>
-          <Text style={styles.saveButtonText}>Salvar Palpite</Text>
+    <SafeAreaView style={styles.container} edges={['bottom', 'top']}>
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={22} color="#09090B" />
         </TouchableOpacity>
-        
-        <TouchableOpacity style={[styles.saveButton, { backgroundColor: '#e5e5ea', marginTop: 10 }]} onPress={() => router.back()}>
-          <Text style={[styles.saveButtonText, { color: '#000' }]}>Voltar</Text>
-        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Detalhes</Text>
+        <View style={{ width: 44 }} />
       </View>
+
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? 'padding' : 'height'} 
+        style={styles.keyboardView}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <ScrollView 
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+          >
+            {/* Meta info */}
+            <View style={styles.metaSection}>
+              <View style={styles.fasePill}>
+                <Text style={styles.faseText}>{partida.fase}</Text>
+              </View>
+              <Text style={styles.dateText}>{formatDate(partida.dataHora)}</Text>
+              <View style={styles.locationRow}>
+                <Ionicons name="location-outline" size={14} color="#8896A6" />
+                <Text style={styles.locationText}>{partida.estadio || 'Estádio a definir'}</Text>
+              </View>
+            </View>
+
+            {/* Match card */}
+            <View style={styles.matchCard}>
+              <View style={styles.teamCol}>
+                <View style={styles.flagContainer}>
+                  {partida.mandante?.escudoUrl ? (
+                    <Image source={{ uri: partida.mandante.escudoUrl }} style={styles.flagImg} />
+                  ) : (
+                    <Text style={{fontSize: 24}}>🏴</Text>
+                  )}
+                </View>
+                <Text style={styles.teamName} numberOfLines={2}>{partida.mandante?.nome || 'Time A'}</Text>
+              </View>
+
+              <View style={styles.vsCol}>
+                {isEncerrada ? (
+                  <View style={styles.finalScoreRow}>
+                    <Text style={styles.finalDigit}>{partida.golsMandante}</Text>
+                    <Text style={styles.finalSep}>-</Text>
+                    <Text style={styles.finalDigit}>{partida.golsVisitante}</Text>
+                  </View>
+                ) : (
+                  <View style={styles.inputRow}>
+                    <TextInput
+                      style={styles.scoreInput}
+                      keyboardType="numeric"
+                      maxLength={2}
+                      value={golsMandante}
+                      onChangeText={setGolsMandante}
+                      placeholder="0"
+                      placeholderTextColor="#C8CDD2"
+                    />
+                    <Text style={styles.inputSep}>-</Text>
+                    <TextInput
+                      style={styles.scoreInput}
+                      keyboardType="numeric"
+                      maxLength={2}
+                      value={golsVisitante}
+                      onChangeText={setGolsVisitante}
+                      placeholder="0"
+                      placeholderTextColor="#C8CDD2"
+                    />
+                  </View>
+                )}
+              </View>
+
+              <View style={styles.teamCol}>
+                <View style={styles.flagContainer}>
+                  {partida.visitante?.escudoUrl ? (
+                    <Image source={{ uri: partida.visitante.escudoUrl }} style={styles.flagImg} />
+                  ) : (
+                    <Text style={{fontSize: 24}}>🏴</Text>
+                  )}
+                </View>
+                <Text style={styles.teamName} numberOfLines={2}>{partida.visitante?.nome || 'Time B'}</Text>
+              </View>
+            </View>
+
+            {!isEncerrada && (
+              <TouchableOpacity 
+                style={[styles.submitButton, submitting && styles.submitDisabled]} 
+                activeOpacity={0.85}
+                onPress={handleSubmit}
+                disabled={submitting}
+              >
+                {submitting ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.submitText}>{isEditing ? 'Atualizar palpite' : 'Confirmar palpite'}</Text>
+                )}
+              </TouchableOpacity>
+            )}
+
+            {isEncerrada && (
+              <View style={styles.encerradaBanner}>
+                <Ionicons name="lock-closed-outline" size={18} color="#8896A6" />
+                <Text style={styles.encerradaText}>Partida encerrada — palpites bloqueados</Text>
+              </View>
+            )}
+          </ScrollView>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 24,
+    paddingBottom: 40,
+  },
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#FFFFFF',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 20,
-  },
-  predictionCard: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    alignItems: 'center',
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  scoreContainer: {
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 12,
   },
-  teamName: {
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#E4E4E7',
+  },
+  headerTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#09090B',
+  },
+  metaSection: {
+    alignItems: 'center',
+    marginBottom: 28,
+    marginTop: 8,
+  },
+  fasePill: {
+    backgroundColor: '#F4F4F5',
+    paddingHorizontal: 14,
+    paddingVertical: 5,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  faseText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#09090B',
+  },
+  dateText: {
     fontSize: 16,
-    fontWeight: 'bold',
-    width: 80,
+    fontWeight: '500',
+    color: '#09090B',
+    textTransform: 'capitalize',
     textAlign: 'center',
+    marginBottom: 6,
   },
-  scoreInput: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    width: 50,
-    height: 50,
-    textAlign: 'center',
-    fontSize: 20,
-    marginHorizontal: 10,
-  },
-  vs: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#666',
-  },
-  saveButton: {
-    backgroundColor: '#0274DF',
-    padding: 15,
-    borderRadius: 8,
-    width: '100%',
+  locationRow: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  saveButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+  locationText: {
+    fontSize: 13,
+    color: '#71717A',
+    marginLeft: 4,
+  },
+  // Match card
+  matchCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FAFAFA',
+    borderRadius: 20,
+    padding: 24,
+    marginBottom: 32,
+    borderWidth: 1,
+    borderColor: '#E4E4E7',
+  },
+  teamCol: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  flagContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#F4F4F5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+    overflow: 'hidden',
+  },
+  flagImg: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  teamName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#09090B',
+    textAlign: 'center',
+  },
+  vsCol: {
+    paddingHorizontal: 8,
+  },
+  finalScoreRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  finalDigit: {
+    fontSize: 36,
+    fontWeight: '700',
+    color: '#09090B',
+  },
+  finalSep: {
+    fontSize: 28,
+    color: '#A1A1AA',
+    marginHorizontal: 8,
+    fontWeight: '300',
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  scoreInput: {
+    width: 56,
+    height: 64,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#E4E4E7',
+    borderRadius: 14,
+    fontSize: 28,
+    fontWeight: '700',
+    textAlign: 'center',
+    color: '#09090B',
+  },
+  inputSep: {
+    fontSize: 24,
+    color: '#A1A1AA',
+    marginHorizontal: 10,
+    fontWeight: '300',
+  },
+  submitButton: {
+    height: 54,
+    backgroundColor: '#09090B',
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  submitDisabled: {
+    opacity: 0.6,
+  },
+  submitText: {
+    color: '#FFFFFF',
     fontSize: 16,
-  }
+    fontWeight: '700',
+  },
+  encerradaBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    backgroundColor: '#F4F4F5',
+    borderRadius: 12,
+  },
+  encerradaText: {
+    marginLeft: 8,
+    color: '#71717A',
+    fontSize: 14,
+    fontWeight: '500',
+  },
 });

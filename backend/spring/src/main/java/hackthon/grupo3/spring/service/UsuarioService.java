@@ -36,6 +36,14 @@ public class UsuarioService implements UserDetailsService {
         return usuarioRepository.save(usuario);
     }
 
+    public List<Usuario> listar() {
+        return usuarioRepository.findAll();
+    }
+
+    public List<Usuario> obterRanking() {
+        return usuarioRepository.findAllByOrderByPontuacaoTotalDescPlacaresExatosDesc();
+    }
+
     public Usuario buscarPorId(Long id) {
         return usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
@@ -48,11 +56,10 @@ public class UsuarioService implements UserDetailsService {
             }
             usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
         } else {
-            // Edição via API ou administrativa
             Usuario existente = buscarPorId(usuario.getId());
             if (usuario.getSenha() == null || usuario.getSenha().trim().isEmpty()) {
                 usuario.setSenha(existente.getSenha());
-            } else {
+            } else if (!usuario.getSenha().startsWith("$2a$")) {
                 usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
             }
         }
@@ -75,25 +82,31 @@ public class UsuarioService implements UserDetailsService {
         return usuarioRepository.findAll();
     }
 
+    public Usuario bloquear(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+        usuario.setBloqueado(true);
+        return usuarioRepository.save(usuario);
+    }
+
+    public Usuario desbloquear(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+        usuario.setBloqueado(false);
+        return usuarioRepository.save(usuario);
+    }
+
+    public void remover(Long id) {
+        if (!usuarioRepository.existsById(id)) {
+            throw new IllegalArgumentException("Usuário não encontrado.");
+        }
+        usuarioRepository.deleteById(id);
+    }
+
     public void alternarBloqueio(Long id) {
         Usuario usuario = buscarPorId(id);
         usuario.setBloqueado(!usuario.getBloqueado());
         usuarioRepository.save(usuario);
     }
 
-    public Usuario bloquear(Long id) {
-        Usuario usuario = buscarPorId(id);
-        usuario.setBloqueado(true);
-        return usuarioRepository.save(usuario);
-    }
-
-    public Usuario desbloquear(Long id) {
-        Usuario usuario = buscarPorId(id);
-        usuario.setBloqueado(false);
-        return usuarioRepository.save(usuario);
-    }
-
-    public void remover(Long id) {
-        usuarioRepository.deleteById(id);
-    }
 }
