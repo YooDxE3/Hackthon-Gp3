@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View, ScrollView, TouchableWithoutFeedback, Keyboard } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View, ScrollView, TouchableWithoutFeedback, Keyboard, Image, StatusBar } from "react-native";
 import { logar } from "../services/loginService";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -11,6 +11,7 @@ export default function LoginScreen() {
     const [senha, setSenha] = useState("");
     const [secureText, setSecureText] = useState(true);
     const [loading, setLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
 
     function trocarEstadoSenha() {
         setSecureText(!secureText);
@@ -24,13 +25,15 @@ export default function LoginScreen() {
     }
 
     async function clicouEmlogar() {
+        setErrorMessage(""); // Limpa o erro anterior
+
         if (!email) {
-            Alert.alert("Atenção!", "Email é obrigatório.");
+            setErrorMessage("E-mail é obrigatório.");
             return;
         }
 
         if (!senha) {
-            Alert.alert("Atenção!", "Senha é obrigatória.");
+            setErrorMessage("Senha é obrigatória.");
             return;
         } 
 
@@ -39,12 +42,17 @@ export default function LoginScreen() {
             const token = await logar(email, senha);
 
             if (!token) {
-                Alert.alert("Atenção!", "Falha ao realizar login, tente novamente.");
+                setErrorMessage("Falha ao realizar login, tente novamente.");
                 return;
             }
             router.replace("/(tabs)");
-        } catch (error) {
-            Alert.alert("Erro", "Falha na conexão com a API.");
+        } catch (error: any) {
+            if (error.response?.status === 401 || error.response?.status === 403) {
+                setErrorMessage("E-mail ou Senha incorretos.");
+            } else {
+                setErrorMessage("Falha na conexão com o servidor.");
+
+            }
         } finally {
             setLoading(false);
         }
@@ -52,6 +60,7 @@ export default function LoginScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
+            <StatusBar barStyle="dark-content" />
             <KeyboardAvoidingView
                 behavior={Platform.OS === "ios" ? 'padding' : 'height'}
                 style={styles.keyboardView}
@@ -62,42 +71,49 @@ export default function LoginScreen() {
                         showsVerticalScrollIndicator={false}
                         keyboardShouldPersistTaps="handled"
                     >
-                        {/* Decorative accent bar */}
-                        <View style={styles.accentBar} />
-
                         <View style={styles.headerContainer}>
+                            <Image 
+                                source={require('../../assets/images/copa-2026-logo.png')} 
+                                style={styles.logoImage} 
+                                resizeMode="contain"
+                            />
                             <Text style={styles.welcomeText}>Bem-vindo ao</Text>
                             <Text style={styles.brandName}>Bolão da Copa</Text>
-                            <Text style={styles.year}>2026</Text>
                         </View>
 
                         <View style={styles.formSection}>
                             <Text style={styles.inputLabel}>E-mail</Text>
                             <TextInput 
-                                style={styles.input}
+                                style={[styles.input, errorMessage ? styles.inputError : null]}
                                 placeholder="seu@email.com"
-                                placeholderTextColor="#B8C4CE"
+                                placeholderTextColor="#A1A1AA"
                                 keyboardType="email-address"
                                 autoCapitalize="none"
-                                onChangeText={setEmail}
+                                onChangeText={(text) => {
+                                    setEmail(text);
+                                    if (errorMessage) setErrorMessage("");
+                                }}
                                 value={email}
                             />
 
                             <Text style={styles.inputLabel}>Senha</Text>
-                            <View style={styles.passwordRow}>
+                            <View style={[styles.passwordRow, errorMessage ? styles.inputError : null]}>
                                 <TextInput 
                                     style={styles.passwordInput}
                                     placeholder="••••••••"
-                                    placeholderTextColor="#B8C4CE"
+                                    placeholderTextColor="#A1A1AA"
                                     secureTextEntry={secureText} 
-                                    onChangeText={setSenha}
+                                    onChangeText={(text) => {
+                                        setSenha(text);
+                                        if (errorMessage) setErrorMessage("");
+                                    }}
                                     value={senha}
                                 />
                                 <TouchableOpacity onPress={trocarEstadoSenha} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
                                     <Ionicons
                                         name={secureText ? "eye-off-outline" : "eye-outline"}
                                         size={20}
-                                        color={"#8896A6"}
+                                        color={"#71717A"}
                                     />
                                 </TouchableOpacity>
                             </View>
@@ -105,6 +121,10 @@ export default function LoginScreen() {
                             <TouchableOpacity style={styles.forgotRow} onPress={esqueciMinhaSenha}>
                                 <Text style={styles.forgotText}>Esqueceu a senha?</Text>
                             </TouchableOpacity>
+
+                            {errorMessage ? (
+                                <Text style={styles.errorText}>{errorMessage}</Text>
+                            ) : null}
 
                             <TouchableOpacity
                                 style={[styles.loginButton, loading && styles.loginButtonDisabled]}
@@ -139,7 +159,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#FAFAF8",
+        backgroundColor: "#FFFFFF", // Pure white background
     },
     keyboardView: {
         flex: 1,
@@ -150,34 +170,28 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         paddingBottom: 40,
     },
-    accentBar: {
-        width: 48,
-        height: 5,
-        backgroundColor: '#1B7A4E',
-        borderRadius: 3,
-        marginBottom: 32,
-    },
     headerContainer: {
         marginBottom: 48,
+        alignItems: 'center',
+    },
+    logoImage: {
+        width: 140,
+        height: 180,
+        marginBottom: 24,
     },
     welcomeText: {
-        fontSize: 16,
-        color: '#6B7D8E',
+        fontSize: 14,
+        color: '#71717A', // Zinc 500
         fontWeight: '500',
-        marginBottom: 6,
+        letterSpacing: 2,
+        textTransform: 'uppercase',
+        marginBottom: 8,
     },
     brandName: {
-        fontSize: 36,
-        fontWeight: '700',
-        color: '#1A2B3C',
-        lineHeight: 40,
-    },
-    year: {
-        fontSize: 56,
+        fontSize: 32,
         fontWeight: '800',
-        color: '#1B7A4E',
-        lineHeight: 60,
-        marginTop: -4,
+        color: '#09090B', // Zinc 950
+        letterSpacing: -0.5,
     },
     formSection: {
         marginBottom: 32,
@@ -185,58 +199,63 @@ const styles = StyleSheet.create({
     inputLabel: {
         fontSize: 13,
         fontWeight: '600',
-        color: '#4A5B6C',
+        color: '#52525B', // Zinc 600
         marginBottom: 8,
-        marginLeft: 2,
+        marginLeft: 4,
     },
     input: {
-        height: 52,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 12,
+        height: 56,
+        backgroundColor: '#F4F4F5', // Zinc 100
+        borderRadius: 16,
         paddingHorizontal: 16,
         fontSize: 16,
-        color: '#1A2B3C',
+        color: '#09090B',
         fontWeight: '500',
-        borderWidth: 1.5,
-        borderColor: '#E5E8EB',
+        borderWidth: 1,
+        borderColor: '#E4E4E7', // Zinc 200
         marginBottom: 20,
     },
     passwordRow: {
-        height: 52,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 12,
+        height: 56,
+        backgroundColor: '#F4F4F5', // Zinc 100
+        borderRadius: 16,
         paddingHorizontal: 16,
         flexDirection: 'row',
         alignItems: 'center',
-        borderWidth: 1.5,
-        borderColor: '#E5E8EB',
+        borderWidth: 1,
+        borderColor: '#E4E4E7', // Zinc 200
         marginBottom: 12,
     },
     passwordInput: {
         flex: 1,
         height: '100%',
         fontSize: 16,
-        color: '#1A2B3C',
+        color: '#09090B',
         fontWeight: '500',
     },
     forgotRow: {
         alignItems: 'flex-end',
-        marginBottom: 28,
+        marginBottom: 32,
     },
     forgotText: {
-        color: '#1B7A4E',
+        color: '#52525B', // Zinc 600
         fontSize: 14,
-        fontWeight: '600',
+        fontWeight: '500',
     },
     loginButton: {
-        height: 54,
-        backgroundColor: '#1B7A4E',
-        borderRadius: 12,
+        height: 56,
+        backgroundColor: '#09090B', // Zinc 950
+        borderRadius: 16,
         justifyContent: 'center',
         alignItems: 'center',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+        elevation: 5,
     },
     loginButtonDisabled: {
-        opacity: 0.6,
+        opacity: 0.7,
     },
     loginButtonText: {
         fontSize: 16,
@@ -246,31 +265,42 @@ const styles = StyleSheet.create({
     dividerRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 20,
+        marginBottom: 24,
     },
     dividerLine: {
         flex: 1,
         height: 1,
-        backgroundColor: '#E5E8EB',
+        backgroundColor: '#E4E4E7', // Zinc 200
     },
     dividerText: {
         marginHorizontal: 16,
         fontSize: 13,
-        color: '#8896A6',
+        color: '#A1A1AA', // Zinc 400
         fontWeight: '500',
     },
     registerButton: {
-        height: 54,
-        borderRadius: 12,
+        height: 56,
+        borderRadius: 16,
         justifyContent: 'center',
         alignItems: 'center',
-        borderWidth: 1.5,
-        borderColor: '#D1D9E0',
+        borderWidth: 1,
+        borderColor: '#E4E4E7', // Zinc 200
         backgroundColor: '#FFFFFF',
     },
     registerButtonText: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#1A2B3C',
+        color: '#09090B',
+    },
+    inputError: {
+        borderColor: '#EF4444', // Red 500
+        backgroundColor: '#FEF2F2', // Light red background
+    },
+    errorText: {
+        color: '#EF4444', // Red 500
+        fontSize: 14,
+        fontWeight: '500',
+        marginBottom: 24,
+        textAlign: 'center',
     },
 });

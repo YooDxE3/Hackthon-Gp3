@@ -90,8 +90,8 @@ export default function MatchesScreen() {
         <View style={styles.cardCenter}>
           <View style={styles.teamLine}>
             <View style={styles.miniFlag}>
-              {item.mandante?.bandeiraUrl ? (
-                <Image source={{ uri: item.mandante.bandeiraUrl }} style={styles.flagImg} />
+              {item.mandante?.escudoUrl ? (
+                <Image source={{ uri: item.mandante.escudoUrl }} style={styles.flagImg} />
               ) : <Text style={{fontSize: 14}}>🏴</Text>}
             </View>
             <Text style={styles.teamName} numberOfLines={1}>{item.mandante?.nome || 'Time A'}</Text>
@@ -99,8 +99,8 @@ export default function MatchesScreen() {
           </View>
           <View style={styles.teamLine}>
             <View style={styles.miniFlag}>
-              {item.visitante?.bandeiraUrl ? (
-                <Image source={{ uri: item.visitante.bandeiraUrl }} style={styles.flagImg} />
+              {item.visitante?.escudoUrl ? (
+                <Image source={{ uri: item.visitante.escudoUrl }} style={styles.flagImg} />
               ) : <Text style={{fontSize: 14}}>🏳️</Text>}
             </View>
             <Text style={styles.teamName} numberOfLines={1}>{item.visitante?.nome || 'Time B'}</Text>
@@ -197,7 +197,7 @@ export default function MatchesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAF8',
+    backgroundColor: '#FFFFFF', // Pure white
   },
   header: {
     flexDirection: 'row',
@@ -210,11 +210,11 @@ const styles = StyleSheet.create({
   pageTitle: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#1A2B3C',
+    color: '#09090B',
   },
   matchCount: {
     fontSize: 14,
-    color: '#8896A6',
+    color: '#A1A1AA',
     fontWeight: '500',
   },
   filterRow: {
@@ -225,19 +225,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FAFAFA', // Zinc 50
     marginRight: 8,
     borderWidth: 1,
-    borderColor: '#E5E8EB',
+    borderColor: '#E4E4E7',
   },
   filterPillActive: {
-    backgroundColor: '#1A2B3C',
-    borderColor: '#1A2B3C',
+    backgroundColor: '#09090B',
+    borderColor: '#09090B',
   },
   filterText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#4A5B6C',
+    color: '#52525B',
   },
   filterTextActive: {
     color: '#FFFFFF',
@@ -249,16 +249,16 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   statusPillActive: {
-    backgroundColor: '#EBF5F0',
+    backgroundColor: '#F4F4F5', // Zinc 100
   },
   statusText: {
     fontSize: 13,
     fontWeight: '500',
-    color: '#8896A6',
+    color: '#71717A',
   },
   statusTextActive: {
-    color: '#1B7A4E',
-    fontWeight: '600',
+    color: '#09090B',
+    fontWeight: '700',
   },
   centered: {
     flex: 1,
@@ -269,12 +269,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#1A2B3C',
+    color: '#09090B',
     marginTop: 16,
   },
   emptySub: {
     fontSize: 14,
-    color: '#6B7D8E',
+    color: '#71717A',
     marginTop: 4,
   },
   listContent: {
@@ -284,12 +284,12 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FAFAFA',
     borderRadius: 14,
     padding: 14,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#F0F2F4',
+    borderColor: '#E4E4E7',
   },
   cardLeft: {
     marginRight: 14,
@@ -301,12 +301,12 @@ const styles = StyleSheet.create({
   cardDay: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1A2B3C',
+    color: '#09090B',
     lineHeight: 22,
   },
   cardMonth: {
     fontSize: 12,
-    color: '#8896A6',
+    color: '#71717A',
     fontWeight: '500',
     textTransform: 'uppercase',
   },
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#F5F6F8',
+    backgroundColor: '#E4E4E7',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 8,
@@ -337,12 +337,12 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     fontWeight: '600',
-    color: '#1A2B3C',
+    color: '#09090B',
   },
   goalText: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#1A2B3C',
+    color: '#09090B',
     marginLeft: 8,
     width: 20,
     textAlign: 'center',
@@ -355,10 +355,10 @@ const styles = StyleSheet.create({
   cardTime: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#1B7A4E',
+    color: '#09090B',
   },
   encerradaPill: {
-    backgroundColor: '#F0F2F4',
+    backgroundColor: '#F4F4F5',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 8,
@@ -366,6 +366,6 @@ const styles = StyleSheet.create({
   encerradaText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#6B7D8E',
+    color: '#52525B',
   },
 });

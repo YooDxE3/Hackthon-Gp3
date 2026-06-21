@@ -5,8 +5,8 @@ import { View, Text, Platform } from 'react-native';
 export default function TabLayout() {
   return (
     <Tabs screenOptions={{ 
-        tabBarActiveTintColor: '#1B7A4E',
-        tabBarInactiveTintColor: '#8896A6',
+        tabBarActiveTintColor: '#09090B', // Zinc 950
+        tabBarInactiveTintColor: '#A1A1AA', // Zinc 400
         tabBarShowLabel: true,
         headerShown: false,
         tabBarLabelStyle: {
@@ -17,7 +17,7 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: '#FFFFFF',
           borderTopWidth: 1,
-          borderTopColor: '#F0F2F4',
+          borderTopColor: '#E4E4E7', // Zinc 200
           height: Platform.OS === 'ios' ? 88 : 64,
           paddingTop: 8,
           paddingBottom: Platform.OS === 'ios' ? 28 : 8,

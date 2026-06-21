@@ -130,7 +130,7 @@ export default function MyPredictionsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAF8',
+    backgroundColor: '#FFFFFF', // Pure white
   },
   header: {
     paddingHorizontal: 24,
@@ -140,18 +140,18 @@ const styles = StyleSheet.create({
   pageTitle: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#1A2B3C',
+    color: '#09090B',
   },
   statsRow: {
     flexDirection: 'row',
     marginHorizontal: 24,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FAFAFA', // Zinc 50
     borderRadius: 14,
     padding: 16,
     marginBottom: 20,
     marginTop: 8,
     borderWidth: 1,
-    borderColor: '#F0F2F4',
+    borderColor: '#E4E4E7', // Zinc 200
   },
   statItem: {
     flex: 1,
@@ -160,20 +160,20 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#1A2B3C',
+    color: '#09090B',
   },
   statValueGreen: {
-    color: '#1B7A4E',
+    color: '#09090B',
   },
   statLabel: {
     fontSize: 12,
-    color: '#8896A6',
+    color: '#71717A',
     fontWeight: '500',
     marginTop: 2,
   },
   statDivider: {
     width: 1,
-    backgroundColor: '#F0F2F4',
+    backgroundColor: '#E4E4E7',
   },
   centered: {
     flex: 1,
@@ -184,12 +184,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#1A2B3C',
+    color: '#09090B',
     marginTop: 16,
   },
   emptySub: {
     fontSize: 14,
-    color: '#6B7D8E',
+    color: '#71717A',
     marginTop: 4,
     textAlign: 'center',
   },
@@ -198,12 +198,12 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FAFAFA',
     borderRadius: 14,
     padding: 16,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#F0F2F4',
+    borderColor: '#E4E4E7',
   },
   cardTop: {
     flexDirection: 'row',
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
   confrontoText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#4A5B6C',
+    color: '#52525B', // Zinc 600
     flex: 1,
   },
   statusDot: {
@@ -224,10 +224,10 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   dotGreen: {
-    backgroundColor: '#1B7A4E',
+    backgroundColor: '#09090B', // Zinc 950
   },
   dotGray: {
-    backgroundColor: '#C8CDD2',
+    backgroundColor: '#D4D4D8', // Zinc 300
   },
   scoreRow: {
     flexDirection: 'row',
@@ -238,11 +238,11 @@ const styles = StyleSheet.create({
   scoreValue: {
     fontSize: 32,
     fontWeight: '700',
-    color: '#1A2B3C',
+    color: '#09090B',
   },
   scoreSep: {
     fontSize: 24,
-    color: '#C8CDD2',
+    color: '#D4D4D8',
     marginHorizontal: 16,
     fontWeight: '300',
   },
@@ -250,23 +250,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#F4F4F5', // Zinc 100
     padding: 10,
     borderRadius: 10,
   },
   pointsText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#1B7A4E',
+    color: '#09090B',
   },
   criterioText: {
     fontSize: 12,
-    color: '#8896A6',
+    color: '#71717A',
     fontWeight: '500',
   },
   pendingText: {
     fontSize: 13,
-    color: '#8896A6',
+    color: '#A1A1AA',
     textAlign: 'center',
     fontWeight: '500',
   },
