@@ -20,8 +20,7 @@ export async function logar(email: string, senha: string) {
 
         return null;
     } catch (error) {
-        console.error("Erro ao logar:", error);
-        return null;
+        throw error;
     }
 }
 

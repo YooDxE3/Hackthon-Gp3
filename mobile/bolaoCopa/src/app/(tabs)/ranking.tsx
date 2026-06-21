@@ -134,7 +134,7 @@ export default function RankingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAF8',
+    backgroundColor: '#FFFFFF',
   },
   header: {
     paddingHorizontal: 24,
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
   pageTitle: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#1A2B3C',
+    color: '#09090B',
   },
   centered: {
     flex: 1,
@@ -155,12 +155,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#1A2B3C',
+    color: '#09090B',
     marginTop: 16,
   },
   emptySub: {
     fontSize: 14,
-    color: '#6B7D8E',
+    color: '#71717A',
     marginTop: 4,
   },
   listContent: {
@@ -173,13 +173,13 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 4,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E8EB',
+    borderBottomColor: '#E4E4E7',
     marginBottom: 4,
   },
   thText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#8896A6',
+    color: '#A1A1AA',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -189,10 +189,10 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 4,
     borderBottomWidth: 1,
-    borderBottomColor: '#F5F6F8',
+    borderBottomColor: '#F4F4F5',
   },
   rowHighlighted: {
-    backgroundColor: '#EBF5F0',
+    backgroundColor: '#F4F4F5',
     marginHorizontal: -8,
     paddingHorizontal: 12,
     borderRadius: 12,
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
   posNumber: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#8896A6',
+    color: '#A1A1AA',
   },
   avatarCol: {
     marginRight: 12,
@@ -225,14 +225,14 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: '#E5E8EB',
+    backgroundColor: '#F4F4F5',
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarInitial: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#4A5B6C',
+    color: '#52525B',
   },
   nameCol: {
     flex: 1,
@@ -240,14 +240,14 @@ const styles = StyleSheet.create({
   nameText: {
     fontSize: 15,
     fontWeight: '500',
-    color: '#1A2B3C',
+    color: '#09090B',
   },
   nameTextBold: {
     fontWeight: '700',
   },
   youLabel: {
     fontSize: 11,
-    color: '#1B7A4E',
+    color: '#09090B',
     fontWeight: '600',
     marginTop: 1,
   },
@@ -260,16 +260,16 @@ const styles = StyleSheet.create({
   pointsText: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#1A2B3C',
+    color: '#09090B',
     marginRight: 3,
   },
   pointsTextTop: {
     fontWeight: '800',
-    color: '#1B7A4E',
+    color: '#09090B',
   },
   ptsLabel: {
     fontSize: 12,
-    color: '#8896A6',
+    color: '#71717A',
     fontWeight: '500',
   },
 });

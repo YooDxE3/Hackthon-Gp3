@@ -94,7 +94,13 @@ public class Partida {
     }
 
     public StatusPartida getStatus() {
-        return status;
+        if (this.status == StatusPartida.ENCERRADA) {
+            return this.status;
+        }
+        if (this.dataHora != null && java.time.LocalDateTime.now().isAfter(this.dataHora)) {
+            return StatusPartida.EM_ANDAMENTO;
+        }
+        return this.status;
     }
 
     public void setStatus(StatusPartida status) {

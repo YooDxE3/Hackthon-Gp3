@@ -93,7 +93,7 @@ export default function MatchDetailScreen() {
   if (loading || !partida) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#1B7A4E" />
+        <ActivityIndicator size="large" color="#09090B" />
       </SafeAreaView>
     );
   }
@@ -104,7 +104,7 @@ export default function MatchDetailScreen() {
     <SafeAreaView style={styles.container} edges={['bottom', 'top']}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={22} color="#1A2B3C" />
+          <Ionicons name="arrow-back" size={22} color="#09090B" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Detalhes</Text>
         <View style={{ width: 44 }} />
@@ -136,10 +136,10 @@ export default function MatchDetailScreen() {
             <View style={styles.matchCard}>
               <View style={styles.teamCol}>
                 <View style={styles.flagContainer}>
-                  {partida.mandante?.bandeiraUrl ? (
-                    <Image source={{ uri: partida.mandante.bandeiraUrl }} style={styles.flagImg} />
+                  {partida.mandante?.escudoUrl ? (
+                    <Image source={{ uri: partida.mandante.escudoUrl }} style={styles.flagImg} />
                   ) : (
-                    <Text style={{fontSize: 36}}>🏴</Text>
+                    <Text style={{fontSize: 24}}>🏴</Text>
                   )}
                 </View>
                 <Text style={styles.teamName} numberOfLines={2}>{partida.mandante?.nome || 'Time A'}</Text>
@@ -179,10 +179,10 @@ export default function MatchDetailScreen() {
 
               <View style={styles.teamCol}>
                 <View style={styles.flagContainer}>
-                  {partida.visitante?.bandeiraUrl ? (
-                    <Image source={{ uri: partida.visitante.bandeiraUrl }} style={styles.flagImg} />
+                  {partida.visitante?.escudoUrl ? (
+                    <Image source={{ uri: partida.visitante.escudoUrl }} style={styles.flagImg} />
                   ) : (
-                    <Text style={{fontSize: 36}}>🏳️</Text>
+                    <Text style={{fontSize: 24}}>🏴</Text>
                   )}
                 </View>
                 <Text style={styles.teamName} numberOfLines={2}>{partida.visitante?.nome || 'Time B'}</Text>
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FAFAF8',
+    backgroundColor: '#FFFFFF',
   },
   keyboardView: {
     flex: 1,
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: '#FAFAF8',
+    backgroundColor: '#FFFFFF',
   },
   header: {
     flexDirection: 'row',
@@ -252,12 +252,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#E5E8EB',
+    borderColor: '#E4E4E7',
   },
   headerTitle: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#1A2B3C',
+    color: '#09090B',
   },
   metaSection: {
     alignItems: 'center',
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   fasePill: {
-    backgroundColor: '#EBF5F0',
+    backgroundColor: '#F4F4F5',
     paddingHorizontal: 14,
     paddingVertical: 5,
     borderRadius: 8,
@@ -274,12 +274,12 @@ const styles = StyleSheet.create({
   faseText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#1B7A4E',
+    color: '#09090B',
   },
   dateText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#1A2B3C',
+    color: '#09090B',
     textTransform: 'capitalize',
     textAlign: 'center',
     marginBottom: 6,
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
   },
   locationText: {
     fontSize: 13,
-    color: '#8896A6',
+    color: '#71717A',
     marginLeft: 4,
   },
   // Match card
@@ -298,12 +298,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FAFAFA',
     borderRadius: 20,
     padding: 24,
     marginBottom: 32,
     borderWidth: 1,
-    borderColor: '#F0F2F4',
+    borderColor: '#E4E4E7',
   },
   teamCol: {
     flex: 1,
@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#F5F6F8',
+    backgroundColor: '#F4F4F5',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
   teamName: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1A2B3C',
+    color: '#09090B',
     textAlign: 'center',
   },
   vsCol: {
@@ -340,11 +340,11 @@ const styles = StyleSheet.create({
   finalDigit: {
     fontSize: 36,
     fontWeight: '700',
-    color: '#1A2B3C',
+    color: '#09090B',
   },
   finalSep: {
     fontSize: 28,
-    color: '#C8CDD2',
+    color: '#A1A1AA',
     marginHorizontal: 8,
     fontWeight: '300',
   },
@@ -355,24 +355,24 @@ const styles = StyleSheet.create({
   scoreInput: {
     width: 56,
     height: 64,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
-    borderColor: '#E5E8EB',
+    borderColor: '#E4E4E7',
     borderRadius: 14,
     fontSize: 28,
     fontWeight: '700',
     textAlign: 'center',
-    color: '#1A2B3C',
+    color: '#09090B',
   },
   inputSep: {
     fontSize: 24,
-    color: '#C8CDD2',
+    color: '#A1A1AA',
     marginHorizontal: 10,
     fontWeight: '300',
   },
   submitButton: {
     height: 54,
-    backgroundColor: '#1B7A4E',
+    backgroundColor: '#09090B',
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
@@ -390,12 +390,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
-    backgroundColor: '#F5F6F8',
+    backgroundColor: '#F4F4F5',
     borderRadius: 12,
   },
   encerradaText: {
     marginLeft: 8,
-    color: '#6B7D8E',
+    color: '#71717A',
     fontSize: 14,
     fontWeight: '500',
   },

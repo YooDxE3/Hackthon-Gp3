@@ -4,7 +4,7 @@ export interface Selecao {
   id: number;
   nome: string;
   codigoFifa: string;
-  bandeiraUrl: string;
+  escudoUrl: string;
   grupo: string;
 }
 

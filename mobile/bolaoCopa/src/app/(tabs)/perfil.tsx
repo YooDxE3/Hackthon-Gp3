@@ -14,8 +14,10 @@ export default function ProfileScreen() {
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState<any>(null);
   
+  const [isEditing, setIsEditing] = useState(false);
   const [nome, setNome] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
+  const [senha, setSenha] = useState('');
 
   useEffect(() => {
     loadUserData();
@@ -63,9 +65,21 @@ export default function ProfileScreen() {
         avatarUrl: avatarUrl
       };
 
+      if (senha.trim() !== '') {
+        updatedUser.senha = senha;
+      }
+
       await api.put(`/usuarios/${user.id}`, updatedUser);
       setUser(updatedUser);
-      Alert.alert('Sucesso', 'Seu perfil foi atualizado!');
+      
+      if (senha.trim() !== '') {
+        Alert.alert('Sucesso', 'Sua senha foi alterada com sucesso!');
+        setSenha(''); // Limpa o campo de senha após salvar
+        setIsEditing(false);
+      } else {
+        Alert.alert('Sucesso', 'Seu perfil foi atualizado!');
+        setIsEditing(false);
+      }
     } catch (error) {
       console.error('Erro ao atualizar perfil:', error);
       Alert.alert('Erro', 'Não foi possível atualizar o perfil.');
@@ -153,61 +167,105 @@ export default function ProfileScreen() {
               </View>
             </View>
 
-            {/* Form */}
-            <View style={styles.formSection}>
-              <Text style={styles.sectionLabel}>Informações</Text>
-              
-              <Text style={styles.inputLabel}>Nome de exibição</Text>
-              <TextInput
-                style={styles.input}
-                value={nome}
-                onChangeText={setNome}
-                placeholder="Seu nome"
-                placeholderTextColor="#B8C4CE"
-              />
+            {isEditing ? (
+              <View style={styles.formSection}>
+                <Text style={styles.sectionLabel}>Editar Perfil</Text>
+                
+                <Text style={styles.inputLabel}>Nome de exibição</Text>
+                <TextInput
+                  style={styles.input}
+                  value={nome}
+                  onChangeText={setNome}
+                  placeholder="Seu nome"
+                  placeholderTextColor="#B8C4CE"
+                />
 
-              <Text style={styles.inputLabel}>URL do avatar</Text>
-              <TextInput
-                style={styles.input}
-                value={avatarUrl}
-                onChangeText={setAvatarUrl}
-                placeholder="https://link-da-foto.jpg"
-                placeholderTextColor="#B8C4CE"
-                autoCapitalize="none"
-              />
+                <Text style={styles.inputLabel}>URL da Foto (Avatar)</Text>
+                <TextInput
+                  style={styles.input}
+                  value={avatarUrl}
+                  onChangeText={setAvatarUrl}
+                  placeholder="https://link-da-foto.jpg"
+                  placeholderTextColor="#B8C4CE"
+                  autoCapitalize="none"
+                />
 
-              <TouchableOpacity 
-                style={[styles.saveButton, saving && styles.saveButtonDisabled]} 
-                onPress={handleSave}
-                disabled={saving}
-                activeOpacity={0.85}
-              >
-                {saving ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.saveButtonText}>Salvar alterações</Text>
-                )}
-              </TouchableOpacity>
-            </View>
+                <Text style={styles.inputLabel}>E-mail <Ionicons name="lock-closed" size={12} color="#8A9BA8" /></Text>
+                <TextInput
+                  style={[styles.input, styles.inputDisabled]}
+                  value={user?.email}
+                  editable={false}
+                />
 
-            {/* Actions */}
-            <View style={styles.actionsSection}>
-              <TouchableOpacity style={styles.actionRow} onPress={handleLogout}>
-                <View style={styles.actionLeft}>
-                  <Ionicons name="log-out-outline" size={20} color="#4A5B6C" />
-                  <Text style={styles.actionText}>Sair da conta</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color="#C8CDD2" />
-              </TouchableOpacity>
+                <Text style={styles.inputLabel}>Nova Senha</Text>
+                <TextInput
+                  style={styles.input}
+                  value={senha}
+                  onChangeText={setSenha}
+                  placeholder="Deixe em branco para não alterar"
+                  placeholderTextColor="#B8C4CE"
+                  secureTextEntry
+                />
 
-              <TouchableOpacity style={[styles.actionRow, styles.actionRowDanger]} onPress={handleDeleteAccount}>
-                <View style={styles.actionLeft}>
-                  <Ionicons name="trash-outline" size={20} color="#DC4C4C" />
-                  <Text style={styles.actionTextDanger}>Excluir conta</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color="#EAB0B0" />
-              </TouchableOpacity>
-            </View>
+                <TouchableOpacity 
+                  style={[styles.saveButton, saving && styles.saveButtonDisabled]} 
+                  onPress={handleSave}
+                  disabled={saving}
+                  activeOpacity={0.85}
+                >
+                  {saving ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.saveButtonText}>Salvar alterações</Text>
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  style={styles.cancelButton} 
+                  onPress={() => {
+                    setIsEditing(false);
+                    setNome(user?.nome || '');
+                    setAvatarUrl(user?.avatarUrl || '');
+                    setSenha('');
+                  }}
+                  disabled={saving}
+                >
+                  <Text style={styles.cancelButtonText}>Cancelar</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.actionsSection}>
+                <TouchableOpacity style={styles.actionRow} onPress={() => setIsEditing(true)}>
+                  <View style={styles.actionLeft}>
+                    <View style={[styles.iconWrapper, { backgroundColor: '#F4F4F5' }]}>
+                      <Ionicons name="pencil" size={20} color="#09090B" />
+                    </View>
+                    <Text style={[styles.actionText, { color: '#09090B' }]}>Editar Perfil</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color="#C8CDD2" />
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.actionRow} onPress={handleLogout}>
+                  <View style={styles.actionLeft}>
+                    <View style={[styles.iconWrapper, { backgroundColor: '#F0F2F4' }]}>
+                      <Ionicons name="log-out-outline" size={20} color="#4A5B6C" />
+                    </View>
+                    <Text style={styles.actionText}>Sair da conta</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color="#C8CDD2" />
+                </TouchableOpacity>
+
+                <TouchableOpacity style={[styles.actionRow, styles.actionRowDanger]} onPress={handleDeleteAccount}>
+                  <View style={styles.actionLeft}>
+                    <View style={[styles.iconWrapper, { backgroundColor: '#FDEDED' }]}>
+                      <Ionicons name="trash-outline" size={20} color="#DC4C4C" />
+                    </View>
+                    <Text style={styles.actionTextDanger}>Excluir conta</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color="#EAB0B0" />
+                </TouchableOpacity>
+              </View>
+            )}
 
           </ScrollView>
         </TouchableWithoutFeedback>
@@ -221,11 +279,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FAFAF8',
+    backgroundColor: '#FFFFFF',
   },
   container: {
     flex: 1,
-    backgroundColor: '#FAFAF8',
+    backgroundColor: '#FFFFFF',
   },
   keyboardView: {
     flex: 1,
@@ -241,17 +299,17 @@ const styles = StyleSheet.create({
   pageTitle: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#1A2B3C',
+    color: '#09090B',
   },
   // Profile card
   profileCard: {
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FAFAFA',
     padding: 28,
     borderRadius: 20,
     marginBottom: 28,
     borderWidth: 1,
-    borderColor: '#F0F2F4',
+    borderColor: '#E4E4E7',
   },
   avatarSection: {
     marginBottom: 16,
@@ -265,7 +323,7 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: '#1B7A4E',
+    backgroundColor: '#09090B',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -277,22 +335,22 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1A2B3C',
+    color: '#09090B',
     marginBottom: 4,
   },
   userEmail: {
     fontSize: 14,
-    color: '#6B7D8E',
+    color: '#71717A',
     marginBottom: 14,
   },
   rolePill: {
-    backgroundColor: '#EBF5F0',
+    backgroundColor: '#F4F4F5',
     paddingHorizontal: 14,
     paddingVertical: 5,
     borderRadius: 8,
   },
   roleText: {
-    color: '#1B7A4E',
+    color: '#09090B',
     fontWeight: '600',
     fontSize: 13,
   },
@@ -301,37 +359,42 @@ const styles = StyleSheet.create({
     marginBottom: 28,
   },
   sectionLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1A2B3C',
-    marginBottom: 16,
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#09090B',
+    marginBottom: 20,
   },
   inputLabel: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#4A5B6C',
+    color: '#52525B',
     marginBottom: 8,
     marginLeft: 2,
   },
   input: {
     height: 52,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FAFAFA',
     borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 16,
-    color: '#1A2B3C',
+    color: '#09090B',
     fontWeight: '500',
     borderWidth: 1.5,
-    borderColor: '#E5E8EB',
+    borderColor: '#E4E4E7',
     marginBottom: 16,
+  },
+  inputDisabled: {
+    backgroundColor: '#F4F4F5',
+    color: '#A1A1AA',
+    borderColor: '#E4E4E7',
   },
   saveButton: {
     height: 54,
-    backgroundColor: '#1B7A4E',
+    backgroundColor: '#09090B',
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: 12,
   },
   saveButtonDisabled: {
     opacity: 0.6,
@@ -341,22 +404,35 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
+  cancelButton: {
+    height: 54,
+    backgroundColor: 'transparent',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  cancelButtonText: {
+    color: '#71717A',
+    fontSize: 16,
+    fontWeight: '600',
+  },
   // Actions
   actionsSection: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    backgroundColor: '#FAFAFA',
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#F0F2F4',
+    borderColor: '#E4E4E7',
     overflow: 'hidden',
   },
   actionRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 16,
+    paddingVertical: 14,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F5F6F8',
+    borderBottomColor: '#F4F4F5',
   },
   actionRowDanger: {
     borderBottomWidth: 0,
@@ -365,16 +441,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  iconWrapper: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   actionText: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#1A2B3C',
-    marginLeft: 12,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#09090B',
+    marginLeft: 14,
   },
   actionTextDanger: {
-    fontSize: 15,
-    fontWeight: '500',
+    fontSize: 16,
+    fontWeight: '600',
     color: '#DC4C4C',
-    marginLeft: 12,
+    marginLeft: 14,
   },
 });

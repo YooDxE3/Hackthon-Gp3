@@ -21,9 +21,11 @@ api.interceptors.request.use(async (config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
+    const isLoginEndpoint = error.config?.url?.includes('/auth/login');
+    
     // Se for um erro de autenticação ou se o usuário logado não for encontrado (ex: banco zerado)
     if (
-      error.response?.status === 401 || 
+      (!isLoginEndpoint && error.response?.status === 401) || 
       (error.response?.status === 404 && error.response?.data?.erro === 'Usuario logado nao encontrado')
     ) {
       await AsyncStorage.removeItem('jwt_token');
