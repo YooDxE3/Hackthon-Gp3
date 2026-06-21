@@ -15,6 +15,9 @@
     .text-green { color: #A9D700 !important; }
 
     /* Botões padronizados */
+    .btn-cyan { background-color: #00C2C7; color: #1F1135; font-weight: bold; border: none; transition: 0.2s; }
+    .btn-cyan:hover { background-color: #009b9f; color: #1F1135; transform: translateY(-2px); }
+
     .btn-success-custom { background-color: #A9D700; color: #1F1135; border: none; transition: 0.2s; }
     .btn-success-custom:hover { background-color: #8db500; color: #1F1135; transform: translateY(-2px); }
 
@@ -45,11 +48,15 @@
 
   <div class="dash-container">
 
-    <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
-      <h1 class="h3 fw-bold text-primary-custom">Gestão de Usuários</h1>
-      <span class="badge bg-cyan text-dark px-3 py-2 rounded-pill fs-6">
-                Total: <span th:text="${#lists.size(usuarios)}">0</span>
-            </span>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 mt-2 gap-3">
+      <h1 class="h3 fw-bold text-primary-custom mb-0">Gestão de Usuários</h1>
+
+      <div class="d-flex align-items-center gap-3">
+        <span class="badge bg-cyan text-dark px-3 py-2 rounded-pill fs-6">
+            Total: <span th:text="${#lists.size(usuarios)}">0</span>
+        </span>
+        <a th:href="@{/usuarios/novo}" class="btn btn-cyan rounded-pill px-4">Novo Administrador</a>
+      </div>
     </div>
 
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
@@ -57,13 +64,13 @@
       <div class="col" th:each="u : ${usuarios}">
         <div class="card card-custom h-100 shadow-sm p-4 text-center position-relative">
 
-                    <span class="position-absolute top-0 end-0 m-3 badge rounded-pill"
-                          th:classappend="${u.bloqueado ? 'bg-danger' : 'bg-success'}"
-                          th:text="${u.bloqueado ? 'Bloqueado' : 'Ativo'}">
-                    </span>
+          <span class="position-absolute top-0 end-0 m-3 badge rounded-pill"
+                th:classappend="${u.bloqueado ? 'bg-danger' : 'bg-success'}"
+                th:text="${u.bloqueado ? 'Bloqueado' : 'Ativo'}">
+          </span>
 
           <span class="position-absolute top-0 start-0 m-3 badge bg-secondary rounded-pill" th:text="${u.perfil}">
-                    </span>
+          </span>
 
           <div class="avatar-container mb-3 mt-2">
             <img th:if="${u.avatarUrl != null and !u.avatarUrl.isEmpty()}" th:src="${u.avatarUrl}" alt="Avatar">
@@ -89,20 +96,26 @@
           </div>
 
           <div class="mt-auto">
-            <form th:if="${#authentication.name != u.email}"
+
+            <div th:if="${#authentication.name == u.email}" class="text-secondary-custom small fst-italic py-2 border border-secondary rounded-pill border-opacity-25">
+              Seu Perfil Atual
+            </div>
+
+            <div th:if="${#authentication.name != u.email and u.perfil.name() == 'ADMIN'}" class="text-cyan small fw-bold py-2 border border-cyan rounded-pill border-opacity-25">
+              Administrador
+            </div>
+
+            <form th:if="${#authentication.name != u.email and u.perfil.name() == 'USER'}"
                   th:action="@{/usuarios/{id}/bloqueio(id=${u.id})}"
                   method="post" class="w-100">
 
               <button type="submit"
                       class="btn w-100 rounded-pill fw-bold py-2"
                       th:classappend="${u.bloqueado ? 'btn-success-custom' : 'btn-danger-custom'}"
-                      th:text="${u.bloqueado ? 'Desbloquear Acesso' : 'Bloquear Usuário'}">
+                      th:text="${u.bloqueado ? 'Desbloquear Palpites' : 'Bloquear Palpites'}">
               </button>
             </form>
 
-            <div th:unless="${#authentication.name != u.email}" class="text-secondary-custom small fst-italic py-2 border border-secondary rounded-pill border-opacity-25">
-              Seu Perfil Atual
-            </div>
           </div>
 
         </div>

@@ -2,6 +2,7 @@ package hackthon.grupo3.spring.service;
 
 import hackthon.grupo3.spring.model.Partida;
 import hackthon.grupo3.spring.model.Selecao;
+import hackthon.grupo3.spring.model.enums.Fase;
 import hackthon.grupo3.spring.model.enums.StatusPartida;
 import hackthon.grupo3.spring.repository.PartidaRepository;
 import hackthon.grupo3.spring.repository.SelecaoRepository;
@@ -66,6 +67,9 @@ public class PartidaService {
         return partidaRepository.save(partida);
     }
 
+    public List<Partida> filtrarPartidas(Long paisId, Fase fase, StatusPartida status) {
+        return partidaRepository.filtrarPartidas(paisId, fase, status);
+    }
     public void remover(Long id) {
         partidaRepository.deleteById(id);
     }

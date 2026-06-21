@@ -67,7 +67,11 @@
 
                         <div class="col-md-4">
                             <label class="form-label text-secondary-custom fw-bold small text-uppercase">Grupo</label>
-                            <input type="text" class="form-control form-control-custom" th:field="*{grupo}" maxlength="2" placeholder="Ex: G">
+                            <select class="form-select form-select-custom" th:field="*{grupo}" required>
+                                <option value="">Selecione...</option>
+                                <option th:each="g : ${T(hackthon.grupo3.spring.model.enums.Grupo).values()}"
+                                        th:value="${g}" th:text="'Grupo ' + ${g}"></option>
+                            </select>
                         </div>
                     </div>
 

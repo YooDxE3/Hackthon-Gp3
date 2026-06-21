@@ -58,17 +58,35 @@
             border-bottom: 2px solid #00C2C7;
         }
 
-        /* Botão Sair personalizado no padrão Vermelho Intenso */
-        .btn-logout {
-            background-color: #E60000;
-            color: #FFFFFF;
-            border: none;
-            transition: background-color 0.2s;
+        /* --- Customização do Dropdown de Perfil --- */
+        .profile-trigger img {
+            border: 2px solid #00C2C7;
+            transition: transform 0.2s;
         }
-
-        .btn-logout:hover {
-            background-color: #B30000;
-            color: #FFFFFF;
+        .profile-trigger:hover img {
+            transform: scale(1.1);
+        }
+        /* Remove a setinha padrão do dropdown do Bootstrap para ficar mais limpo */
+        .dropdown-toggle::after {
+            display: none;
+        }
+        .dropdown-menu-custom {
+            background-color: #2A1B4E;
+            border: 1px solid #334155;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+        }
+        .dropdown-item-custom {
+            color: #E5E7EB;
+            font-weight: 500;
+            padding: 8px 20px;
+            transition: all 0.2s;
+        }
+        .dropdown-item-custom:hover {
+            background-color: #1F1135;
+            color: #00C2C7;
+        }
+        .dropdown-item-custom.text-danger:hover {
+            color: #E60000 !important;
         }
 
         /* No mobile, cria uma separação visual e margem para os links */
@@ -99,10 +117,25 @@
             </a>
         </div>
 
-        <div class="d-flex ms-auto order-lg-last order-1">
-            <form th:action="@{/logout}" method="post" class="m-0">
-                <button type="submit" class="btn btn-logout btn-sm px-4 rounded-pill fw-bold">Sair</button>
-            </form>
+        <div class="dropdown ms-auto order-lg-last order-1">
+            <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle profile-trigger" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                <img th:src="@{'https://ui-avatars.com/api/?name=' + ${#authentication.name} + '&background=00C2C7&color=1F1135&bold=true'}" alt="Perfil" width="45" height="45" class="rounded-circle">
+            </a>
+
+            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-custom mt-2" aria-labelledby="dropdownUser">
+                <li>
+                    <span class="dropdown-item-text text-secondary opacity-75 small fw-bold text-uppercase" th:text="${#authentication.name}">usuario@email.com</span>
+                </li>
+                <li><hr class="dropdown-divider" style="border-color: #334155;"></li>
+                <li>
+                    <a class="dropdown-item dropdown-item-custom" th:href="@{/usuarios/perfil}">Meu Perfil</a>
+                </li>
+                <li>
+                    <form th:action="@{/logout}" method="post" class="m-0">
+                        <button type="submit" class="dropdown-item dropdown-item-custom text-danger fw-bold">Sair</button>
+                    </form>
+                </li>
+            </ul>
         </div>
 
         <div class="collapse navbar-collapse" id="menuPrincipal">

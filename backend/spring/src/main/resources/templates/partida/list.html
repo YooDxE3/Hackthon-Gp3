@@ -22,7 +22,6 @@
         .btn-result { background-color: transparent; border: 1px solid #FFD700; color: #FFD700; transition: 0.2s; }
         .btn-result:hover { background-color: #FFD700; color: #1F1135; }
 
-        /* Estrutura visual do confronto (Bandeiras e X) */
         .match-container {
             display: flex;
             align-items: center;
@@ -56,7 +55,6 @@
             text-transform: uppercase;
         }
 
-        /* Barra de Filtros (Visual) */
         .filter-bar {
             background-color: #2A1B4E;
             border-radius: 8px;
@@ -78,16 +76,39 @@
             <a th:href="@{/partidas/novo}" class="btn btn-cyan rounded-pill px-4">Nova Partida</a>
         </div>
 
-        <div class="filter-bar d-flex flex-column flex-md-row gap-3">
-            <input type="text" class="form-control form-control-dark" placeholder="Pesquisa por país...">
-            <select class="form-select form-control-dark w-auto">
-                <option value="">Todos os Status</option>
-                <option value="AGENDADA">Agendadas</option>
-                <option value="EM_ANDAMENTO">Em Andamento</option>
-                <option value="ENCERRADA">Encerradas</option>
-            </select>
-            <button class="btn btn-secondary px-4">Filtrar</button>
-        </div>
+        <form th:action="@{/partidas}" method="get" class="filter-bar d-flex flex-column flex-lg-row gap-4 align-items-lg-center">
+
+            <div class="d-flex align-items-center gap-2">
+                <label for="fase" class="text-secondary-custom fw-bold mb-0">Fase:</label>
+                <select name="fase" id="fase" class="form-select form-control-dark w-auto">
+                    <option value="">Todas</option>
+                    <option th:each="f : ${fases}" th:value="${f}" th:text="${f.descricao}" th:selected="${paramFase != null and paramFase.name() == f.name()}"></option>
+                </select>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <label for="status" class="text-secondary-custom fw-bold mb-0">Status:</label>
+                <select name="status" id="status" class="form-select form-control-dark w-auto">
+                    <option value="" th:selected="${paramStatus == null}">Todos</option>
+                    <option value="AGENDADA" th:selected="${paramStatus?.name() == 'AGENDADA'}">Agendadas</option>
+                    <option value="EM_ANDAMENTO" th:selected="${paramStatus?.name() == 'EM_ANDAMENTO'}">Em Andamento</option>
+                    <option value="ENCERRADA" th:selected="${paramStatus?.name() == 'ENCERRADA'}">Encerradas</option>
+                </select>
+            </div>
+
+            <div class="d-flex align-items-center gap-2 flex-grow-1">
+                <label for="paisId" class="text-secondary-custom fw-bold mb-0">País:</label>
+                <select name="paisId" id="paisId" class="form-select form-control-dark w-100">
+                    <option value="">Todos os Países</option>
+                    <option th:each="s : ${selecoes}" th:value="${s.id}" th:text="${s.nome}" th:selected="${paramPais == s.id}"></option>
+                </select>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-secondary px-4 fw-bold">Filtrar</button>
+                <a th:href="@{/partidas}" th:if="${paramPais != null or paramFase != null or paramStatus != null}" class="btn btn-outline-secondary px-3">Limpar</a>
+            </div>
+        </form>
 
         <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
 
@@ -95,6 +116,7 @@
                 <div class="card card-custom h-100 shadow-sm p-3">
 
                     <div class="match-container">
+
                         <div class="d-flex flex-column align-items-center" style="width: 35%;">
                             <div class="flag-box">
                                 <img th:if="${p.mandante?.escudoUrl != null}" th:src="${p.mandante.escudoUrl}" alt="Mandante">
@@ -102,7 +124,11 @@
                             <div class="team-name text-truncate w-100" th:title="${p.mandante?.nome}" th:text="${p.mandante?.nome ?: 'A Definir'}">Time A</div>
                         </div>
 
-                        <div class="fw-bolder text-secondary-custom fs-5">X</div>
+                        <div class="d-flex align-items-center justify-content-center gap-2" style="width: 30%;">
+                            <span class="fs-3 fw-bold text-primary-custom" th:text="${p.status?.name() == 'ENCERRADA' ? (p.golsMandante != null ? p.golsMandante : 0) : '-'}">-</span>
+                            <span class="fw-bolder text-secondary-custom fs-5 mx-1">X</span>
+                            <span class="fs-3 fw-bold text-primary-custom" th:text="${p.status?.name() == 'ENCERRADA' ? (p.golsVisitante != null ? p.golsVisitante : 0) : '-'}">-</span>
+                        </div>
 
                         <div class="d-flex flex-column align-items-center" style="width: 35%;">
                             <div class="flag-box">
@@ -114,13 +140,13 @@
 
                     <div class="d-flex justify-content-between align-items-end mb-4 px-2">
                         <div>
-                            <div class="text-secondary-custom small mb-1">Data: <span class="text-primary-custom" th:text="${#temporals.format(p.dataHora, 'dd/MM/yyyy HH:mm')}">--/--/--</span></div>
-                            <div class="text-secondary-custom small mb-1">Fase: <span class="text-cyan fw-bold" th:text="${p.fase}">---</span></div>
+                            <div class="text-secondary-custom small mb-1">Data: <span class="text-primary-custom" th:text="${p.dataHora != null ? #temporals.format(p.dataHora, 'dd/MM/yyyy HH:mm') : 'A definir'}">--/--/--</span></div>
+                            <div class="text-secondary-custom small mb-1">Fase: <span class="text-cyan fw-bold" th:text="${p.fase != null ? p.fase.descricao : '---'}">---</span></div>
                         </div>
                         <div class="text-end">
                             <span class="badge rounded-pill"
-                                  th:classappend="${p.status.name() == 'ENCERRADA' ? 'bg-success' : (p.status.name() == 'EM_ANDAMENTO' ? 'bg-warning text-dark' : 'bg-info text-dark')}"
-                                  th:text="${p.status}">STATUS</span>
+                                  th:classappend="${p.status?.name() == 'ENCERRADA' ? 'bg-success' : (p.status?.name() == 'EM_ANDAMENTO' ? 'bg-warning text-dark' : 'bg-info text-dark')}"
+                                  th:text="${p.status != null ? p.status : 'SEM STATUS'}">STATUS</span>
                         </div>
                     </div>
 
@@ -133,6 +159,10 @@
                 </div>
             </div>
 
+        </div>
+
+        <div th:if="${#lists.isEmpty(partidas)}" class="text-center mt-5">
+            <p class="text-secondary-custom fs-5">Nenhuma partida encontrada com estes filtros.</p>
         </div>
 
     </div>

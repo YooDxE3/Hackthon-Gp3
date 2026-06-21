@@ -42,35 +42,57 @@ public class UsuarioService implements UserDetailsService {
     }
 
     public Usuario salvar(Usuario usuario) {
+        if (usuario.getId() == null) {
+            if (usuarioRepository.existsByEmail(usuario.getEmail())) {
+                throw new IllegalArgumentException("E-mail já cadastrado no sistema.");
+            }
+            usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
+        } else {
+            // Edição via API ou administrativa
+            Usuario existente = buscarPorId(usuario.getId());
+            if (usuario.getSenha() == null || usuario.getSenha().trim().isEmpty()) {
+                usuario.setSenha(existente.getSenha());
+            } else {
+                usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
+            }
+        }
         return usuarioRepository.save(usuario);
+    }
+
+    public void atualizarPerfilLogado(String emailOriginal, String novoNome, String novaFoto, String novaSenha) {
+        Usuario usuario = usuarioRepository.findByEmail(emailOriginal)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado."));
+        usuario.setNome(novoNome);
+        usuario.setAvatarUrl(novaFoto);
+
+        if (novaSenha != null && !novaSenha.trim().isEmpty()) {
+            usuario.setSenha(passwordEncoder.encode(novaSenha));
+        }
+        usuarioRepository.save(usuario);
     }
 
     public List<Usuario> listarTodos() {
         return usuarioRepository.findAll();
     }
 
-    // Método usado pelo UsuarioController (Painel Web Thymeleaf)
     public void alternarBloqueio(Long id) {
         Usuario usuario = buscarPorId(id);
         usuario.setBloqueado(!usuario.getBloqueado());
         usuarioRepository.save(usuario);
     }
 
-    // Método usado pelo UsuarioApi (Mobile REST)
     public Usuario bloquear(Long id) {
         Usuario usuario = buscarPorId(id);
         usuario.setBloqueado(true);
         return usuarioRepository.save(usuario);
     }
 
-    // Método usado pelo UsuarioApi (Mobile REST)
     public Usuario desbloquear(Long id) {
         Usuario usuario = buscarPorId(id);
         usuario.setBloqueado(false);
         return usuarioRepository.save(usuario);
     }
 
-    // Método usado pelo UsuarioApi (Mobile REST)
     public void remover(Long id) {
         usuarioRepository.deleteById(id);
     }
