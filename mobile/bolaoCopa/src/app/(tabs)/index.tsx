@@ -1,16 +1,13 @@
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, RefreshControl, Image, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useState, useEffect, useCallback } from 'react';
+import { useRouter, useFocusEffect } from 'expo-router';
+import { useState, useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 
 import { buscarPartidas, Partida } from '../../services/partidaService';
 import { buscarMeusPalpites } from '../../services/palpiteService';
 import { buscarRanking, UsuarioRanking } from '../../services/rankingService';
 import { api } from '../../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect } from 'expo-router';
-import { Colors } from '@/constants/theme';
 
 export default function TelaInicio() {
   const router = useRouter();

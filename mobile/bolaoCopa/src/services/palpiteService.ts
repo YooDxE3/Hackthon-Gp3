@@ -30,7 +30,6 @@ export const buscarMeusPalpites = async (): Promise<any[]> => {
     });
     return response.data;
   } catch (error: any) {
-    console.log("ERRO REAL DA API PALPITES:", error.response?.data || error.message);
     throw error;
   }
 };

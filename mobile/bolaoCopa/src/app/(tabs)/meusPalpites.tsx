@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, RefreshControl, Image, TouchableOpacity } from 'react-native';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { buscarMeusPalpites } from '../../services/palpiteService';

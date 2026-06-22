@@ -1,12 +1,12 @@
 import { View, Text, StyleSheet, SectionList, ActivityIndicator, TouchableOpacity, RefreshControl, Image, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useRouter, useFocusEffect } from 'expo-router';
+import { useState, useCallback, useMemo } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { buscarPartidas, Partida } from '../../services/partidaService';
 import { buscarMeusPalpites } from '../../services/palpiteService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from 'expo-router';
+
 
 export default function TelaPartidas() {
   const [partidas, setPartidas] = useState<Partida[]>([]);
