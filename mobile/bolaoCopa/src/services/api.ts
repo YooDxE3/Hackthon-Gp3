@@ -1,5 +1,6 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.3.5:8080/api';
 
@@ -8,7 +9,6 @@ const api = axios.create({
   timeout: 10000,
 });
 
-import { router } from 'expo-router';
 
 api.interceptors.request.use(async (config) => {
   const token = await AsyncStorage.getItem('jwt_token');

@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { buscarPartidaPorId, Partida } from '../../services/partidaService';
 import { salvarPalpite, buscarMeusPalpites } from '../../services/palpiteService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Colors } from '@/constants/theme';
+
 
 export default function TelaDetalhePartida() {
   const { id } = useLocalSearchParams();
@@ -73,7 +73,7 @@ export default function TelaDetalhePartida() {
     if (id) {
       fetchData();
     }
-  }, [id]);
+  }, [id, router]);
 
   const salvarAcaoPalpite = async () => {
     if (!golsMandante || !golsVisitante) {

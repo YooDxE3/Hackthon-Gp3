@@ -46,12 +46,7 @@ export default function TelaRanking() {
     carregarDados();
   }, []);
 
-  const obterEmojiMedalha = (pos: number) => {
-    if (pos === 0) return '🥇';
-    if (pos === 1) return '🥈';
-    if (pos === 2) return '🥉';
-    return null;
-  };
+
 
   const renderizarItemRanking = ({ item, index }: { item: UsuarioRanking; index: number }) => {
     const isCurrentUser = item.id === idUsuarioAtual;
