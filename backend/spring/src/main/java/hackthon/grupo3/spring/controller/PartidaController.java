@@ -3,15 +3,15 @@ package hackthon.grupo3.spring.controller;
 import hackthon.grupo3.spring.model.Partida;
 import hackthon.grupo3.spring.model.Selecao;
 import hackthon.grupo3.spring.model.enums.Fase;
+import hackthon.grupo3.spring.model.enums.StatusPartida;
 import hackthon.grupo3.spring.service.PartidaService;
 import hackthon.grupo3.spring.service.SelecaoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("partidas")
@@ -24,8 +24,23 @@ public class PartidaController {
     private SelecaoService selecaoService;
 
     @GetMapping
-    public String listar(Model model) {
-        model.addAttribute("partidas", service.listar());
+    public String listar(
+            @RequestParam(required = false) Long paisId,
+            @RequestParam(required = false) Fase fase,
+            @RequestParam(required = false) StatusPartida status,
+            Model model) {
+
+        // Agora a pesquisa permite cruzar País + Fase + Status de uma só vez
+        List<Partida> partidas = service.filtrarPartidas(paisId, fase, status);
+
+        model.addAttribute("partidas", partidas);
+        model.addAttribute("selecoes", selecaoService.listar());
+        model.addAttribute("fases", Fase.values());
+
+        model.addAttribute("paramPais", paisId);
+        model.addAttribute("paramFase", fase);
+        model.addAttribute("paramStatus", status);
+
         return "partida/list";
     }
 

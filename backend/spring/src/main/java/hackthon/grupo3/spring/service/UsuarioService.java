@@ -50,15 +50,37 @@ public class UsuarioService implements UserDetailsService {
     }
 
     public Usuario salvar(Usuario usuario) {
-        // Atenção: este método salva sem criptografar a senha.
-        // Se for usado para edição, a regra de senha precisará ser tratada.
+        if (usuario.getId() == null) {
+            if (usuarioRepository.existsByEmail(usuario.getEmail())) {
+                throw new IllegalArgumentException("E-mail já cadastrado no sistema.");
+            }
+            usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
+        } else {
+            Usuario existente = buscarPorId(usuario.getId());
+            if (usuario.getSenha() == null || usuario.getSenha().trim().isEmpty()) {
+                usuario.setSenha(existente.getSenha());
+            } else if (!usuario.getSenha().startsWith("$2a$")) {
+                usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
+            }
+        }
         return usuarioRepository.save(usuario);
+    }
+
+    public void atualizarPerfilLogado(String emailOriginal, String novoNome, String novaFoto, String novaSenha) {
+        Usuario usuario = usuarioRepository.findByEmail(emailOriginal)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado."));
+        usuario.setNome(novoNome);
+        usuario.setAvatarUrl(novaFoto);
+
+        if (novaSenha != null && !novaSenha.trim().isEmpty()) {
+            usuario.setSenha(passwordEncoder.encode(novaSenha));
+        }
+        usuarioRepository.save(usuario);
     }
 
     public List<Usuario> listarTodos() {
         return usuarioRepository.findAll();
     }
-
 
     public Usuario bloquear(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
@@ -82,9 +104,7 @@ public class UsuarioService implements UserDetailsService {
     }
 
     public void alternarBloqueio(Long id) {
-        Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
-
+        Usuario usuario = buscarPorId(id);
         usuario.setBloqueado(!usuario.getBloqueado());
         usuarioRepository.save(usuario);
     }

@@ -20,12 +20,11 @@ export async function logar(email: string, senha: string) {
 
         return null;
     } catch (error) {
-        console.error("Erro ao logar:", error);
-        return null;
+        throw error;
     }
 }
 
-export async function logout() {
+export async function sairDaConta() {
     await AsyncStorage.removeItem('jwt_token');
     await AsyncStorage.removeItem('user_email');
 }

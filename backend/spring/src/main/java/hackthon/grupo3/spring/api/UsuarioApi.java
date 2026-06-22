@@ -20,7 +20,7 @@ public class UsuarioApi {
 
     @GetMapping
     public ResponseEntity<List<Usuario>> listar() {
-        return ResponseEntity.ok(service.listar());
+        return ResponseEntity.ok(service.listarTodos());
     }
 
     @GetMapping("/{id}")

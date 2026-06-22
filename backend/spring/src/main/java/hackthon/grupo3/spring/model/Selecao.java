@@ -1,6 +1,7 @@
 package hackthon.grupo3.spring.model;
 
 import jakarta.persistence.*;
+import  hackthon.grupo3.spring.model.enums.Grupo;
 
 @Entity
 public class Selecao {
@@ -16,7 +17,8 @@ public class Selecao {
 
     private String escudoUrl;
 
-    private String grupo;
+    @Enumerated(EnumType.STRING)
+    private Grupo grupo;
 
     public Long getId() {
         return id;
@@ -50,11 +52,11 @@ public class Selecao {
         this.escudoUrl = escudoUrl;
     }
 
-    public String getGrupo() {
+    public Grupo getGrupo() {
         return grupo;
     }
 
-    public void setGrupo(String grupo) {
+    public void setGrupo(Grupo grupo) {
         this.grupo = grupo;
     }
 }

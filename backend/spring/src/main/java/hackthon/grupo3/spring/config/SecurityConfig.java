@@ -91,6 +91,7 @@ public class SecurityConfig {
                                 "/api/auth/esqueci-senha",
                                 "/api/auth/redefinir-senha"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/partidas/**", "/api/partidas", "/api/ranking/**", "/api/ranking", "/api/selecoes/**", "/api/selecoes").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
@@ -109,7 +110,7 @@ public class SecurityConfig {
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .defaultSuccessUrl("/selecoes", true)
+                        .defaultSuccessUrl("/dashboard", true)
                         .permitAll()
                 )
                 .logout(logout -> logout
