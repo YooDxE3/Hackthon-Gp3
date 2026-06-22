@@ -5,31 +5,37 @@ import { api } from '@/services/api';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-export default function RegisterScreen() {
-  const [name, setName] = useState('');
+export default function TelaRegistro() {
+  const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [secureText, setSecureText] = useState(true);
-  const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [senha, setSenha] = useState('');
+  const [senhaOculta, setSenhaOculta] = useState(true);
+  const [carregando, setCarregando] = useState(false);
+  const [mensagemErro, setMensagemErro] = useState('');
   
   const router = useRouter();
 
-  const handleRegister = async () => {
-    setErrorMessage('');
+  const realizarRegistro = async () => {
+    setMensagemErro('');
 
-    if (!name || !email || !password) {
-      setErrorMessage('Preencha todos os campos!');
+    if (!nome || !email || !senha) {
+      setMensagemErro('Preencha todos os campos!');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setMensagemErro('Por favor, insira um e-mail válido (ex: seu@email.com).');
       return;
     }
 
     try {
-      setLoading(true);
+      setCarregando(true);
       
       const resposta = await api.post('/auth/registro', { 
-        nome: name, 
+        nome: nome, 
         email: email, 
-        senha: password 
+        senha: senha 
       });
 
       if (resposta.status === 200) {
@@ -37,13 +43,13 @@ export default function RegisterScreen() {
           { text: 'OK', onPress: () => router.replace('/login') }
         ]);
       } else {
-        setErrorMessage('Não foi possível cadastrar.');
+        setMensagemErro('Não foi possível cadastrar.');
       }
     } catch (error: any) {
       console.error(error);
-      setErrorMessage(error.response?.data?.erro || 'Falha ao realizar cadastro no servidor.');
+      setMensagemErro(error.response?.data?.erro || 'Falha ao realizar cadastro no servidor.');
     } finally {
-      setLoading(false);
+      setCarregando(false);
     }
   };
 
@@ -77,19 +83,19 @@ export default function RegisterScreen() {
                     <View style={styles.formSection}>
                         <Text style={styles.inputLabel}>Nome</Text>
                         <TextInput
-                            style={[styles.input, errorMessage ? styles.inputError : null]}
+                            style={[styles.input, mensagemErro ? styles.inputError : null]}
                             placeholder="Como quer ser chamado"
                             placeholderTextColor="#A1A1AA"
-                            value={name}
+                            value={nome}
                             onChangeText={(text) => {
-                                setName(text);
-                                if (errorMessage) setErrorMessage('');
+                                setNome(text);
+                                if (mensagemErro) setMensagemErro('');
                             }}
                         />
 
                         <Text style={styles.inputLabel}>E-mail</Text>
                         <TextInput
-                            style={[styles.input, errorMessage ? styles.inputError : null]}
+                            style={[styles.input, mensagemErro ? styles.inputError : null]}
                             placeholder="seu@email.com"
                             placeholderTextColor="#A1A1AA"
                             keyboardType="email-address"
@@ -97,43 +103,43 @@ export default function RegisterScreen() {
                             value={email}
                             onChangeText={(text) => {
                                 setEmail(text);
-                                if (errorMessage) setErrorMessage('');
+                                if (mensagemErro) setMensagemErro('');
                             }}
                         />
                         
                         <Text style={styles.inputLabel}>Senha</Text>
-                        <View style={[styles.passwordRow, errorMessage ? styles.inputError : null]}>
+                        <View style={[styles.passwordRow, mensagemErro ? styles.inputError : null]}>
                             <TextInput
                                 style={styles.passwordInput}
                                 placeholder="Mínimo 6 caracteres"
                                 placeholderTextColor="#A1A1AA"
-                                secureTextEntry={secureText}
-                                value={password}
+                                secureTextEntry={senhaOculta}
+                                value={senha}
                                 onChangeText={(text) => {
-                                    setPassword(text);
-                                    if (errorMessage) setErrorMessage('');
+                                    setSenha(text);
+                                    if (mensagemErro) setMensagemErro('');
                                 }}
                             />
-                            <TouchableOpacity onPress={() => setSecureText(!secureText)} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
+                            <TouchableOpacity onPress={() => setSenhaOculta(!senhaOculta)} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
                                 <Ionicons
-                                    name={secureText ? "eye-off-outline" : "eye-outline"}
+                                    name={senhaOculta ? "eye-off-outline" : "eye-outline"}
                                     size={20}
                                     color={"#71717A"}
                                 />
                             </TouchableOpacity>
                         </View>
 
-                        {errorMessage ? (
-                            <Text style={styles.errorText}>{errorMessage}</Text>
+                        {mensagemErro ? (
+                            <Text style={styles.errorText}>{mensagemErro}</Text>
                         ) : null}
 
                         <TouchableOpacity 
-                            style={[styles.submitButton, loading && styles.submitButtonDisabled]} 
-                            onPress={handleRegister} 
-                            disabled={loading}
+                            style={[styles.submitButton, carregando && styles.submitButtonDisabled]} 
+                            onPress={realizarRegistro} 
+                            disabled={carregando}
                             activeOpacity={0.85}
                         >
-                            <Text style={styles.submitButtonText}>{loading ? 'Criando conta...' : 'Criar conta'}</Text>
+                            <Text style={styles.submitButtonText}>{carregando ? 'Criando conta...' : 'Criar conta'}</Text>
                         </TouchableOpacity>
                     </View>
 
@@ -153,7 +159,7 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#FFFFFF", // Pure white background
+        backgroundColor: "#FFFFFF",
     },
     keyboardView: {
         flex: 1,
@@ -168,11 +174,11 @@ const styles = StyleSheet.create({
         width: 44,
         height: 44,
         borderRadius: 22,
-        backgroundColor: '#F4F4F5', // Zinc 100
+        backgroundColor: '#F4F4F5',
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: '#E4E4E7', // Zinc 200
+        borderColor: '#E4E4E7',
         marginBottom: 32,
     },
     headerContainer: {
@@ -187,13 +193,13 @@ const styles = StyleSheet.create({
     pageTitle: {
         fontSize: 30,
         fontWeight: '800',
-        color: '#09090B', // Zinc 950
+        color: '#09090B',
         marginBottom: 8,
         letterSpacing: -0.5,
     },
     pageSubtitle: {
         fontSize: 16,
-        color: '#71717A', // Zinc 500
+        color: '#71717A',
         fontWeight: '400',
         lineHeight: 22,
         textAlign: 'center',
@@ -204,31 +210,31 @@ const styles = StyleSheet.create({
     inputLabel: {
         fontSize: 13,
         fontWeight: '600',
-        color: '#52525B', // Zinc 600
+        color: '#52525B',
         marginBottom: 8,
         marginLeft: 4,
     },
     input: {
         height: 56,
-        backgroundColor: '#F4F4F5', // Zinc 100
+        backgroundColor: '#F4F4F5',
         borderRadius: 16,
         paddingHorizontal: 16,
         fontSize: 16,
         color: '#09090B',
         fontWeight: '500',
         borderWidth: 1,
-        borderColor: '#E4E4E7', // Zinc 200
+        borderColor: '#E4E4E7',
         marginBottom: 20,
     },
     passwordRow: {
         height: 56,
-        backgroundColor: '#F4F4F5', // Zinc 100
+        backgroundColor: '#F4F4F5',
         borderRadius: 16,
         paddingHorizontal: 16,
         flexDirection: 'row',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: '#E4E4E7', // Zinc 200
+        borderColor: '#E4E4E7',
         marginBottom: 28,
     },
     passwordInput: {
@@ -240,7 +246,7 @@ const styles = StyleSheet.create({
     },
     submitButton: {
         height: 56,
-        backgroundColor: '#09090B', // Zinc 950
+        backgroundColor: '#09090B',
         borderRadius: 16,
         justifyContent: 'center',
         alignItems: 'center',
@@ -265,19 +271,19 @@ const styles = StyleSheet.create({
     },
     footerText: {
         fontSize: 15,
-        color: '#71717A', // Zinc 500
+        color: '#71717A',
     },
     footerLink: {
         fontSize: 15,
         fontWeight: '600',
-        color: '#09090B', // Zinc 950
+        color: '#09090B',
     },
     inputError: {
-        borderColor: '#EF4444', // Red 500
-        backgroundColor: '#FEF2F2', // Light red background
+        borderColor: '#EF4444',
+        backgroundColor: '#FEF2F2',
     },
     errorText: {
-        color: '#EF4444', // Red 500
+        color: '#EF4444',
         fontSize: 14,
         fontWeight: '500',
         marginBottom: 24,

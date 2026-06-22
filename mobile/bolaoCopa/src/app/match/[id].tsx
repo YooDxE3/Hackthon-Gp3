@@ -1,39 +1,64 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Image, Alert, KeyboardAvoidingView, Platform, ScrollView, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image, Alert, KeyboardAvoidingView, Platform, ScrollView, TouchableWithoutFeedback, Keyboard, Vibration } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { buscarPartidaPorId, Partida } from '../../services/partidaService';
 import { salvarPalpite, buscarMeusPalpites } from '../../services/palpiteService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Colors } from '@/constants/theme';
 
-export default function MatchDetailScreen() {
+export default function TelaDetalhePartida() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
 
   const [partida, setPartida] = useState<Partida | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const [carregando, setCarregando] = useState(true);
+  const [enviando, setEnviando] = useState(false);
+  const [editando, setEditando] = useState(false);
+  const [isGuest, setIsGuest] = useState(false);
 
-  const [golsMandante, setGolsMandante] = useState('');
-  const [golsVisitante, setGolsVisitante] = useState('');
+  const [golsMandante, setGolsMandante] = useState('0');
+  const [golsVisitante, setGolsVisitante] = useState('0');
+
+  const incrementarGol = (isMandante: boolean) => {
+    Vibration.vibrate(10);
+    if (isMandante) {
+      setGolsMandante(prev => String(Math.min(99, (Number(prev) || 0) + 1)));
+    } else {
+      setGolsVisitante(prev => String(Math.min(99, (Number(prev) || 0) + 1)));
+    }
+  };
+
+  const decrementarGol = (isMandante: boolean) => {
+    Vibration.vibrate(10);
+    if (isMandante) {
+      setGolsMandante(prev => String(Math.max(0, (Number(prev) || 0) - 1)));
+    } else {
+      setGolsVisitante(prev => String(Math.max(0, (Number(prev) || 0) - 1)));
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const partidaId = Number(id);
+        const token = await AsyncStorage.getItem('jwt_token');
+        const isUserGuest = !token;
+        setIsGuest(isUserGuest);
+
         const [partidaData, meusPalpitesData] = await Promise.all([
           buscarPartidaPorId(partidaId),
-          buscarMeusPalpites().catch(() => [])
+          isUserGuest ? Promise.resolve([]) : buscarMeusPalpites().catch(() => [])
         ]);
-        
+
         setPartida(partidaData);
 
         const existingPalpite = meusPalpitesData.find((p: any) => p.partidaId === partidaId);
         if (existingPalpite) {
           setGolsMandante(existingPalpite.golsMandante.toString());
           setGolsVisitante(existingPalpite.golsVisitante.toString());
-          setIsEditing(true);
+          setEditando(true);
         }
 
       } catch (error) {
@@ -41,7 +66,7 @@ export default function MatchDetailScreen() {
         Alert.alert('Erro', 'Não foi possível carregar os detalhes da partida.');
         router.back();
       } finally {
-        setLoading(false);
+        setCarregando(false);
       }
     };
 
@@ -50,14 +75,14 @@ export default function MatchDetailScreen() {
     }
   }, [id]);
 
-  const handleSubmit = async () => {
+  const salvarAcaoPalpite = async () => {
     if (!golsMandante || !golsVisitante) {
       Alert.alert('Atenção', 'Preencha o placar para as duas seleções.');
       return;
     }
 
     try {
-      setSubmitting(true);
+      setEnviando(true);
       await salvarPalpite({
         partidaId: Number(id),
         golsMandante: Number(golsMandante),
@@ -71,7 +96,7 @@ export default function MatchDetailScreen() {
       console.error('Erro ao salvar palpite:', error);
       Alert.alert('Erro', error.response?.data?.message || 'Falha ao salvar o palpite.');
     } finally {
-      setSubmitting(false);
+      setEnviando(false);
     }
   };
 
@@ -90,7 +115,7 @@ export default function MatchDetailScreen() {
     }
   };
 
-  if (loading || !partida) {
+  if (carregando || !partida) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#09090B" />
@@ -110,17 +135,16 @@ export default function MatchDetailScreen() {
         <View style={{ width: 44 }} />
       </View>
 
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === "ios" ? 'padding' : 'height'} 
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <ScrollView 
+          <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
             keyboardShouldPersistTaps="handled"
           >
-            {/* Meta info */}
             <View style={styles.metaSection}>
               <View style={styles.fasePill}>
                 <Text style={styles.faseText}>{partida.fase}</Text>
@@ -131,50 +155,33 @@ export default function MatchDetailScreen() {
                 <Text style={styles.locationText}>{partida.estadio || 'Estádio a definir'}</Text>
               </View>
             </View>
-
-            {/* Match card */}
             <View style={styles.matchCard}>
               <View style={styles.teamCol}>
                 <View style={styles.flagContainer}>
                   {partida.mandante?.escudoUrl ? (
                     <Image source={{ uri: partida.mandante.escudoUrl }} style={styles.flagImg} />
                   ) : (
-                    <Text style={{fontSize: 24}}>🏴</Text>
+                    <Text style={{ fontSize: 24 }}>🏴</Text>
                   )}
                 </View>
                 <Text style={styles.teamName} numberOfLines={2}>{partida.mandante?.nome || 'Time A'}</Text>
+                
+                {!isEncerrada && !isGuest && (
+                  <View style={styles.stepperGroup}>
+                    <TouchableOpacity style={styles.stepperBtn} onPress={() => decrementarGol(true)}>
+                      <Ionicons name="remove" size={20} color="#09090B" />
+                    </TouchableOpacity>
+                    <Text style={styles.stepperValue}>{golsMandante}</Text>
+                    <TouchableOpacity style={styles.stepperBtn} onPress={() => incrementarGol(true)}>
+                      <Ionicons name="add" size={20} color="#09090B" />
+                    </TouchableOpacity>
+                  </View>
+                )}
+                {isEncerrada && <Text style={styles.finalScore}>{partida.golsMandante}</Text>}
               </View>
 
               <View style={styles.vsCol}>
-                {isEncerrada ? (
-                  <View style={styles.finalScoreRow}>
-                    <Text style={styles.finalDigit}>{partida.golsMandante}</Text>
-                    <Text style={styles.finalSep}>-</Text>
-                    <Text style={styles.finalDigit}>{partida.golsVisitante}</Text>
-                  </View>
-                ) : (
-                  <View style={styles.inputRow}>
-                    <TextInput
-                      style={styles.scoreInput}
-                      keyboardType="numeric"
-                      maxLength={2}
-                      value={golsMandante}
-                      onChangeText={setGolsMandante}
-                      placeholder="0"
-                      placeholderTextColor="#C8CDD2"
-                    />
-                    <Text style={styles.inputSep}>-</Text>
-                    <TextInput
-                      style={styles.scoreInput}
-                      keyboardType="numeric"
-                      maxLength={2}
-                      value={golsVisitante}
-                      onChangeText={setGolsVisitante}
-                      placeholder="0"
-                      placeholderTextColor="#C8CDD2"
-                    />
-                  </View>
-                )}
+                 <Text style={styles.vsTextLabel}>VS</Text>
               </View>
 
               <View style={styles.teamCol}>
@@ -182,25 +189,48 @@ export default function MatchDetailScreen() {
                   {partida.visitante?.escudoUrl ? (
                     <Image source={{ uri: partida.visitante.escudoUrl }} style={styles.flagImg} />
                   ) : (
-                    <Text style={{fontSize: 24}}>🏴</Text>
+                    <Text style={{ fontSize: 24 }}>🏴</Text>
                   )}
                 </View>
                 <Text style={styles.teamName} numberOfLines={2}>{partida.visitante?.nome || 'Time B'}</Text>
+                
+                {!isEncerrada && !isGuest && (
+                  <View style={styles.stepperGroup}>
+                    <TouchableOpacity style={styles.stepperBtn} onPress={() => decrementarGol(false)}>
+                      <Ionicons name="remove" size={20} color="#09090B" />
+                    </TouchableOpacity>
+                    <Text style={styles.stepperValue}>{golsVisitante}</Text>
+                    <TouchableOpacity style={styles.stepperBtn} onPress={() => incrementarGol(false)}>
+                      <Ionicons name="add" size={20} color="#09090B" />
+                    </TouchableOpacity>
+                  </View>
+                )}
+                {isEncerrada && <Text style={styles.finalScore}>{partida.golsVisitante}</Text>}
               </View>
             </View>
 
-            {!isEncerrada && (
-              <TouchableOpacity 
-                style={[styles.submitButton, submitting && styles.submitDisabled]} 
+            {!isEncerrada && !isGuest && (
+              <TouchableOpacity
+                style={[styles.submitButton, enviando && styles.submitDisabled]}
                 activeOpacity={0.85}
-                onPress={handleSubmit}
-                disabled={submitting}
+                onPress={salvarAcaoPalpite}
+                disabled={enviando}
               >
-                {submitting ? (
+                {enviando ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
-                  <Text style={styles.submitText}>{isEditing ? 'Atualizar palpite' : 'Confirmar palpite'}</Text>
+                  <Text style={styles.submitText}>{editando ? 'Atualizar palpite' : 'Confirmar palpite'}</Text>
                 )}
+              </TouchableOpacity>
+            )}
+
+            {!isEncerrada && isGuest && (
+              <TouchableOpacity
+                style={styles.submitButton}
+                activeOpacity={0.85}
+                onPress={() => router.push('/login')}
+              >
+                <Text style={styles.submitText}>Faça Login para Palpitar</Text>
               </TouchableOpacity>
             )}
 
@@ -293,17 +323,19 @@ const styles = StyleSheet.create({
     color: '#71717A',
     marginLeft: 4,
   },
-  // Match card
   matchCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FAFAFA',
+    backgroundColor: '#09090B',
     borderRadius: 20,
     padding: 24,
     marginBottom: 32,
-    borderWidth: 1,
-    borderColor: '#E4E4E7',
+    elevation: 8,
+    shadowColor: '#09090B',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
   },
   teamCol: {
     flex: 1,
@@ -313,11 +345,13 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#F4F4F5',
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
     overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
   },
   flagImg: {
     width: '100%',
@@ -326,49 +360,48 @@ const styles = StyleSheet.create({
   },
   teamName: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#09090B',
+    fontWeight: '700',
+    color: '#FFFFFF',
     textAlign: 'center',
+    marginBottom: 16,
   },
   vsCol: {
     paddingHorizontal: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  finalScoreRow: {
+  vsTextLabel: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 20,
+    fontWeight: '800',
+  },
+  stepperGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  finalDigit: {
-    fontSize: 36,
-    fontWeight: '700',
-    color: '#09090B',
-  },
-  finalSep: {
-    fontSize: 28,
-    color: '#A1A1AA',
-    marginHorizontal: 8,
-    fontWeight: '300',
-  },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  scoreInput: {
-    width: 56,
-    height: 64,
     backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: '#E4E4E7',
-    borderRadius: 14,
-    fontSize: 28,
-    fontWeight: '700',
-    textAlign: 'center',
-    color: '#09090B',
+    borderRadius: 16,
+    padding: 4,
   },
-  inputSep: {
-    fontSize: 24,
-    color: '#A1A1AA',
-    marginHorizontal: 10,
-    fontWeight: '300',
+  stepperBtn: {
+    width: 36,
+    height: 36,
+    backgroundColor: '#F4F4F5',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  stepperValue: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#09090B',
+    marginHorizontal: 12,
+    minWidth: 28,
+    textAlign: 'center',
+  },
+  finalScore: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: '#FFFFFF',
   },
   submitButton: {
     height: 54,

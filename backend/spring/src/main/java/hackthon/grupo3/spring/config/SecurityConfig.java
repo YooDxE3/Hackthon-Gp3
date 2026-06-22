@@ -86,6 +86,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login", "/api/auth/registro").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/partidas/**", "/api/partidas", "/api/ranking/**", "/api/ranking", "/api/selecoes/**", "/api/selecoes").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
