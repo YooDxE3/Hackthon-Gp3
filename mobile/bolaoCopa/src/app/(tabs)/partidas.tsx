@@ -1,40 +1,53 @@
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, RefreshControl, Image, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, SectionList, ActivityIndicator, TouchableOpacity, RefreshControl, Image, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { buscarPartidas, Partida } from '../../services/partidaService';
+import { buscarMeusPalpites } from '../../services/palpiteService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from 'expo-router';
 
-export default function MatchesScreen() {
-  const [matches, setMatches] = useState<Partida[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [selectedFase, setSelectedFase] = useState<string>('Todas');
-  const [selectedStatus, setSelectedStatus] = useState<string>('Todos');
+export default function TelaPartidas() {
+  const [partidas, setPartidas] = useState<Partida[]>([]);
+  const [palpitesIds, setPalpitesIds] = useState<number[]>([]);
+  const [carregando, setCarregando] = useState(true);
+  const [atualizando, setAtualizando] = useState(false);
+  const [faseSelecionada, setFaseSelecionada] = useState<string>('Todas');
+  const [statusSelecionado, setStatusSelecionado] = useState<string>('Todos');
   const router = useRouter();
 
-  const loadMatches = async () => {
+  const carregarPartidas = async () => {
     try {
-      const data = await buscarPartidas();
-      setMatches(data);
+      const token = await AsyncStorage.getItem('jwt_token');
+      const isGuest = !token;
+
+      const [data, palpitesData] = await Promise.all([
+        buscarPartidas(),
+        isGuest ? Promise.resolve([]) : buscarMeusPalpites().catch(() => [])
+      ]);
+      setPartidas(data);
+      setPalpitesIds(palpitesData.map((p: any) => p.partidaId));
     } catch (error) {
       console.error('Erro ao buscar partidas:', error);
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      setCarregando(false);
+      setAtualizando(false);
     }
   };
 
-  useEffect(() => {
-    loadMatches();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      carregarPartidas();
+    }, [])
+  );
 
   const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    loadMatches();
+    setAtualizando(true);
+    carregarPartidas();
   }, []);
 
-  const formatDate = (dateString: string) => {
+  const formatarData = (dateString: string) => {
     try {
       const date = new Date(dateString);
       const day = date.getDate();
@@ -47,20 +60,32 @@ export default function MatchesScreen() {
   };
 
   const fases = useMemo(() => {
-    const unicas = Array.from(new Set(matches.map(m => m.fase)));
+    const unicas = Array.from(new Set(partidas.map((m: Partida) => m.fase)));
     return ['Todas', ...unicas];
-  }, [matches]);
+  }, [partidas]);
 
-  const filteredMatches = useMemo(() => {
-    let result = matches;
-    if (selectedFase !== 'Todas') {
-      result = result.filter(m => m.fase === selectedFase);
+  const partidasFiltradas = useMemo(() => {
+    let result = partidas;
+    if (faseSelecionada !== 'Todas') {
+      result = result.filter((m: Partida) => m.fase === faseSelecionada);
     }
-    if (selectedStatus !== 'Todos') {
-      result = result.filter(m => m.status === selectedStatus);
+    if (statusSelecionado !== 'Todos') {
+      result = result.filter((m: Partida) => m.status === statusSelecionado);
     }
     return result;
-  }, [matches, selectedFase, selectedStatus]);
+  }, [partidas, faseSelecionada, statusSelecionado]);
+
+  const partidasAgrupadas = useMemo(() => {
+    const groups: Record<string, Partida[]> = {};
+    partidasFiltradas.forEach((m: Partida) => {
+      const dt = new Date(m.dataHora);
+      const dateKey = dt.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
+      const formattedDateKey = dateKey.charAt(0).toUpperCase() + dateKey.slice(1);
+      if (!groups[formattedDateKey]) groups[formattedDateKey] = [];
+      groups[formattedDateKey].push(m);
+    });
+    return Object.entries(groups).map(([title, data]) => ({ title, data }));
+  }, [partidasFiltradas]);
 
   const statuses = ['Todos', 'AGENDADA', 'EM_ANDAMENTO', 'ENCERRADA'];
   const statusLabels: Record<string, string> = {
@@ -70,9 +95,10 @@ export default function MatchesScreen() {
     'ENCERRADA': 'Encerrada',
   };
 
-  const renderMatchCard = ({ item }: { item: Partida }) => {
-    const dt = formatDate(item.dataHora);
+  const renderizarCardPartida = ({ item }: { item: Partida }) => {
+    const dt = formatarData(item.dataHora);
     const isEncerrada = item.status === 'ENCERRADA';
+    const isPalpitado = palpitesIds.includes(item.id);
 
     return (
       <TouchableOpacity 
@@ -114,7 +140,14 @@ export default function MatchesScreen() {
               <Text style={styles.encerradaText}>Fim</Text>
             </View>
           ) : (
-            <Text style={styles.cardTime}>{dt.time}</Text>
+            <View style={{alignItems: 'center'}}>
+              <Text style={styles.cardTime}>{dt.time}</Text>
+              {isPalpitado && (
+                <View style={styles.palpitadoBadge}>
+                  <Ionicons name="checkmark-done" size={12} color="#10B981" />
+                </View>
+              )}
+            </View>
           )}
         </View>
       </TouchableOpacity>
@@ -125,23 +158,24 @@ export default function MatchesScreen() {
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <Text style={styles.pageTitle}>Jogos</Text>
-        <Text style={styles.matchCount}>{filteredMatches.length} partidas</Text>
+        <Text style={styles.matchCount}>{partidasFiltradas.length} partidas</Text>
       </View>
 
-      {!loading && matches.length > 0 && (
-        <View>
+      {!carregando && partidas.length > 0 && (
+        <View style={styles.filtersWrapper}>
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filterRow}
+            contentContainerStyle={styles.segmentedContainer}
+            style={styles.segmentedScroll}
           >
             {fases.map((fase) => (
               <TouchableOpacity
                 key={fase}
-                style={[styles.filterPill, selectedFase === fase && styles.filterPillActive]}
-                onPress={() => setSelectedFase(fase)}
+                style={[styles.segmentedPill, faseSelecionada === fase && styles.segmentedPillActive]}
+                onPress={() => setFaseSelecionada(fase)}
               >
-                <Text style={[styles.filterText, selectedFase === fase && styles.filterTextActive]}>
+                <Text style={[styles.segmentedText, faseSelecionada === fase && styles.segmentedTextActive]}>
                   {fase}
                 </Text>
               </TouchableOpacity>
@@ -151,15 +185,16 @@ export default function MatchesScreen() {
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filterRow}
+            contentContainerStyle={styles.segmentedContainer}
+            style={styles.segmentedScroll}
           >
             {statuses.map((status) => (
               <TouchableOpacity
                 key={status}
-                style={[styles.statusPill, selectedStatus === status && styles.statusPillActive]}
-                onPress={() => setSelectedStatus(status)}
+                style={[styles.segmentedPill, statusSelecionado === status && styles.segmentedPillActive]}
+                onPress={() => setStatusSelecionado(status)}
               >
-                <Text style={[styles.statusText, selectedStatus === status && styles.statusTextActive]}>
+                <Text style={[styles.segmentedText, statusSelecionado === status && styles.segmentedTextActive]}>
                   {statusLabels[status]}
                 </Text>
               </TouchableOpacity>
@@ -168,25 +203,31 @@ export default function MatchesScreen() {
         </View>
       )}
 
-      {loading ? (
+      {carregando ? (
         <View style={styles.centered}>
           <ActivityIndicator size="large" color="#1B7A4E" />
         </View>
-      ) : filteredMatches.length === 0 ? (
+      ) : partidasFiltradas.length === 0 ? (
         <View style={styles.centered}>
           <Ionicons name="football-outline" size={48} color="#D1D9E0" />
           <Text style={styles.emptyTitle}>Nenhuma partida encontrada</Text>
           <Text style={styles.emptySub}>Ajuste os filtros ou aguarde novos jogos.</Text>
         </View>
       ) : (
-        <FlatList
-          data={filteredMatches}
+        <SectionList
+          sections={partidasAgrupadas}
           keyExtractor={(item) => item.id.toString()}
-          renderItem={renderMatchCard}
+          renderItem={renderizarCardPartida}
+          renderSectionHeader={({ section: { title } }) => (
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{title}</Text>
+            </View>
+          )}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          stickySectionHeadersEnabled={true}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#1B7A4E']} />
+            <RefreshControl refreshing={atualizando} onRefresh={onRefresh} colors={['#10B981']} />
           }
         />
       )}
@@ -197,7 +238,7 @@ export default function MatchesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF', // Pure white
+    backgroundColor: '#FFFFFF',
   },
   header: {
     flexDirection: 'row',
@@ -217,48 +258,42 @@ const styles = StyleSheet.create({
     color: '#A1A1AA',
     fontWeight: '500',
   },
-  filterRow: {
+  filtersWrapper: {
     paddingHorizontal: 24,
-    paddingBottom: 12,
+    marginBottom: 8,
   },
-  filterPill: {
+  segmentedScroll: {
+    marginBottom: 12,
+  },
+  segmentedContainer: {
+    backgroundColor: '#F4F4F5',
+    borderRadius: 12,
+    padding: 4,
+    flexDirection: 'row',
+  },
+  segmentedPill: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#FAFAFA', // Zinc 50
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: '#E4E4E7',
+    paddingVertical: 6,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minWidth: 80,
   },
-  filterPillActive: {
-    backgroundColor: '#09090B',
-    borderColor: '#09090B',
+  segmentedPillActive: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
-  filterText: {
+  segmentedText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#52525B',
-  },
-  filterTextActive: {
-    color: '#FFFFFF',
-  },
-  statusPill: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginRight: 8,
-  },
-  statusPillActive: {
-    backgroundColor: '#F4F4F5', // Zinc 100
-  },
-  statusText: {
-    fontSize: 13,
-    fontWeight: '500',
     color: '#71717A',
   },
-  statusTextActive: {
+  segmentedTextActive: {
     color: '#09090B',
-    fontWeight: '700',
   },
   centered: {
     flex: 1,
@@ -280,6 +315,16 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: 24,
     paddingBottom: 40,
+  },
+  sectionHeader: {
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 8,
+    marginBottom: 8,
+  },
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#52525B',
   },
   card: {
     flexDirection: 'row',
@@ -327,6 +372,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 8,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#D4D4D8',
   },
   flagImg: {
     width: '100%',
@@ -367,5 +414,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#52525B',
+  },
+  palpitadoBadge: {
+    marginTop: 4,
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#D1FAE5',
   },
 });

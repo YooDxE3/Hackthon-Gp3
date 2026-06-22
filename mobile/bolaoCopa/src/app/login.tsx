@@ -61,6 +61,23 @@ export default function LoginScreen() {
     return (
         <SafeAreaView style={styles.container}>
             <StatusBar barStyle="dark-content" />
+            
+            <View style={styles.topBar}>
+                <TouchableOpacity 
+                    style={styles.backButton} 
+                    onPress={() => {
+                        if (router.canGoBack()) {
+                            router.back();
+                        } else {
+                            router.replace("/(tabs)");
+                        }
+                    }}
+                    hitSlop={{top: 15, bottom: 15, left: 15, right: 15}}
+                >
+                    <Ionicons name="arrow-back" size={24} color="#09090B" />
+                </TouchableOpacity>
+            </View>
+
             <KeyboardAvoidingView
                 behavior={Platform.OS === "ios" ? 'padding' : 'height'}
                 style={styles.keyboardView}
@@ -160,6 +177,22 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#FFFFFF", // Pure white background
+    },
+    topBar: {
+        width: '100%',
+        paddingHorizontal: 24,
+        paddingTop: 16,
+        paddingBottom: 8,
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+    },
+    backButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#F4F4F5',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     keyboardView: {
         flex: 1,

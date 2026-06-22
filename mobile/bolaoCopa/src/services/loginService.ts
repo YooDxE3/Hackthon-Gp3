@@ -24,7 +24,7 @@ export async function logar(email: string, senha: string) {
     }
 }
 
-export async function logout() {
+export async function sairDaConta() {
     await AsyncStorage.removeItem('jwt_token');
     await AsyncStorage.removeItem('user_email');
 }

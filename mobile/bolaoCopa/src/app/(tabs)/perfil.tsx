@@ -1,43 +1,47 @@
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, TextInput, ScrollView, Image, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
-import { logout } from '@/services/loginService';
+import { sairDaConta } from '@/services/loginService';
 import { api } from '@/services/api';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function ProfileScreen() {
+export default function TelaPerfil() {
   const router = useRouter();
   
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [carregando, setCarregando] = useState(true);
+  const [salvando, setSalvando] = useState(false);
+  const [user, setUsuario] = useState<any>(null);
+  const [isGuest, setIsGuest] = useState(false);
   
-  const [isEditing, setIsEditing] = useState(false);
+  const [editando, setEditando] = useState(false);
   const [nome, setNome] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [senha, setSenha] = useState('');
 
   useEffect(() => {
-    loadUserData();
+    carregarDadosUsuario();
   }, []);
 
-  const loadUserData = async () => {
+  const carregarDadosUsuario = async () => {
     try {
       const email = await AsyncStorage.getItem('user_email');
-      if (!email) {
-        Alert.alert('Erro', 'Não foi possível identificar o usuário logado.');
-        setLoading(false);
+      const token = await AsyncStorage.getItem('jwt_token');
+
+      if (!token || !email) {
+        setIsGuest(true);
+        setCarregando(false);
         return;
       }
+      setIsGuest(false);
 
       const response = await api.get('/usuarios');
       const usuarios = response.data;
       const loggedUser = usuarios.find((u: any) => u.email === email);
 
       if (loggedUser) {
-        setUser(loggedUser);
+        setUsuario(loggedUser);
         setNome(loggedUser.nome || '');
         setAvatarUrl(loggedUser.avatarUrl || '');
       } else {
@@ -47,18 +51,18 @@ export default function ProfileScreen() {
       console.error('Erro ao buscar dados do perfil:', error);
       Alert.alert('Erro', 'Não foi possível carregar os dados do perfil.');
     } finally {
-      setLoading(false);
+      setCarregando(false);
     }
   };
 
-  const handleSave = async () => {
+  const salvarPerfil = async () => {
     if (!nome.trim()) {
       Alert.alert('Aviso', 'O nome não pode ficar vazio.');
       return;
     }
 
     try {
-      setSaving(true);
+      setSalvando(true);
       const updatedUser = {
         ...user,
         nome: nome,
@@ -70,39 +74,39 @@ export default function ProfileScreen() {
       }
 
       await api.put(`/usuarios/${user.id}`, updatedUser);
-      setUser(updatedUser);
+      setUsuario(updatedUser);
       
       if (senha.trim() !== '') {
         Alert.alert('Sucesso', 'Sua senha foi alterada com sucesso!');
-        setSenha(''); // Limpa o campo de senha após salvar
-        setIsEditing(false);
+        setSenha('');
+        setEditando(false);
       } else {
         Alert.alert('Sucesso', 'Seu perfil foi atualizado!');
-        setIsEditing(false);
+        setEditando(false);
       }
     } catch (error) {
       console.error('Erro ao atualizar perfil:', error);
       Alert.alert('Erro', 'Não foi possível atualizar o perfil.');
     } finally {
-      setSaving(false);
+      setSalvando(false);
     }
   };
 
-  const handleLogout = () => {
+  const confirmarSaida = () => {
     Alert.alert('Sair', 'Tem certeza que deseja sair do Bolão da Copa?', [
       { text: 'Cancelar', style: 'cancel' },
       { 
         text: 'Sair', 
         style: 'destructive', 
         onPress: async () => {
-            await logout();
+            await sairDaConta();
             router.replace('/login');
         }
       }
     ]);
   };
 
-  const handleDeleteAccount = () => {
+  const excluirConta = () => {
     Alert.alert('Excluir Conta', 'Tem certeza absoluta? Esta ação não pode ser desfeita e todos os seus palpites serão perdidos.', [
       { text: 'Cancelar', style: 'cancel' },
       { 
@@ -110,25 +114,51 @@ export default function ProfileScreen() {
         style: 'destructive', 
         onPress: async () => {
             try {
-              setLoading(true);
+              setCarregando(true);
               await api.delete(`/usuarios/${user.id}`);
-              await logout();
+              await sairDaConta();
               Alert.alert('Sucesso', 'Sua conta foi excluída.');
               router.replace('/login');
             } catch (error) {
               console.error('Erro ao excluir conta:', error);
               Alert.alert('Erro', 'Não foi possível excluir sua conta.');
-              setLoading(false);
+              setCarregando(false);
             }
         }
       }
     ]);
   };
 
-  if (loading) {
+  if (carregando) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#1B7A4E" />
+      </SafeAreaView>
+    );
+  }
+
+  if (isGuest) {
+    return (
+      <SafeAreaView style={[styles.container, { justifyContent: 'center' }]} edges={['top']}>
+        <View style={{ alignItems: 'center', padding: 40 }}>
+          <Ionicons name="person-circle-outline" size={80} color="#D1D9E0" />
+          <Text style={{ fontSize: 24, fontWeight: '700', color: '#09090B', marginTop: 16 }}>Perfil</Text>
+          <Text style={{ fontSize: 15, color: '#71717A', textAlign: 'center', marginTop: 8, marginBottom: 32 }}>
+            Você está navegando como visitante. Crie uma conta ou faça login para participar do bolão e competir com seus amigos!
+          </Text>
+          <TouchableOpacity 
+            style={{ backgroundColor: '#09090B', paddingHorizontal: 32, paddingVertical: 14, borderRadius: 12, width: '100%', alignItems: 'center', marginBottom: 12 }} 
+            onPress={() => router.push('/login')}
+          >
+            <Text style={{ color: '#FFF', fontWeight: '700', fontSize: 16 }}>Fazer Login</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={{ backgroundColor: '#F4F4F5', paddingHorizontal: 32, paddingVertical: 14, borderRadius: 12, width: '100%', alignItems: 'center' }} 
+            onPress={() => router.push('/register')}
+          >
+            <Text style={{ color: '#09090B', fontWeight: '600', fontSize: 16 }}>Criar Conta</Text>
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
     );
   }
@@ -149,7 +179,6 @@ export default function ProfileScreen() {
               <Text style={styles.pageTitle}>Perfil</Text>
             </View>
 
-            {/* Profile card */}
             <View style={styles.profileCard}>
               <View style={styles.avatarSection}>
                 {avatarUrl ? (
@@ -167,7 +196,7 @@ export default function ProfileScreen() {
               </View>
             </View>
 
-            {isEditing ? (
+            {editando ? (
               <View style={styles.formSection}>
                 <Text style={styles.sectionLabel}>Editar Perfil</Text>
                 
@@ -208,12 +237,12 @@ export default function ProfileScreen() {
                 />
 
                 <TouchableOpacity 
-                  style={[styles.saveButton, saving && styles.saveButtonDisabled]} 
-                  onPress={handleSave}
-                  disabled={saving}
+                  style={[styles.saveButton, salvando && styles.saveButtonDisabled]} 
+                  onPress={salvarPerfil}
+                  disabled={salvando}
                   activeOpacity={0.85}
                 >
-                  {saving ? (
+                  {salvando ? (
                     <ActivityIndicator color="#fff" />
                   ) : (
                     <Text style={styles.saveButtonText}>Salvar alterações</Text>
@@ -223,19 +252,19 @@ export default function ProfileScreen() {
                 <TouchableOpacity 
                   style={styles.cancelButton} 
                   onPress={() => {
-                    setIsEditing(false);
+                    setEditando(false);
                     setNome(user?.nome || '');
                     setAvatarUrl(user?.avatarUrl || '');
                     setSenha('');
                   }}
-                  disabled={saving}
+                  disabled={salvando}
                 >
                   <Text style={styles.cancelButtonText}>Cancelar</Text>
                 </TouchableOpacity>
               </View>
             ) : (
               <View style={styles.actionsSection}>
-                <TouchableOpacity style={styles.actionRow} onPress={() => setIsEditing(true)}>
+                <TouchableOpacity style={styles.actionRow} onPress={() => setEditando(true)}>
                   <View style={styles.actionLeft}>
                     <View style={[styles.iconWrapper, { backgroundColor: '#F4F4F5' }]}>
                       <Ionicons name="pencil" size={20} color="#09090B" />
@@ -245,7 +274,7 @@ export default function ProfileScreen() {
                   <Ionicons name="chevron-forward" size={18} color="#C8CDD2" />
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.actionRow} onPress={handleLogout}>
+                <TouchableOpacity style={styles.actionRow} onPress={confirmarSaida}>
                   <View style={styles.actionLeft}>
                     <View style={[styles.iconWrapper, { backgroundColor: '#F0F2F4' }]}>
                       <Ionicons name="log-out-outline" size={20} color="#4A5B6C" />
@@ -255,7 +284,7 @@ export default function ProfileScreen() {
                   <Ionicons name="chevron-forward" size={18} color="#C8CDD2" />
                 </TouchableOpacity>
 
-                <TouchableOpacity style={[styles.actionRow, styles.actionRowDanger]} onPress={handleDeleteAccount}>
+                <TouchableOpacity style={[styles.actionRow, styles.actionRowDanger]} onPress={excluirConta}>
                   <View style={styles.actionLeft}>
                     <View style={[styles.iconWrapper, { backgroundColor: '#FDEDED' }]}>
                       <Ionicons name="trash-outline" size={20} color="#DC4C4C" />
@@ -301,7 +330,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#09090B',
   },
-  // Profile card
   profileCard: {
     alignItems: 'center',
     backgroundColor: '#FAFAFA',
@@ -354,7 +382,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 13,
   },
-  // Form
   formSection: {
     marginBottom: 28,
   },
@@ -417,7 +444,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  // Actions
   actionsSection: {
     backgroundColor: '#FAFAFA',
     borderRadius: 16,
