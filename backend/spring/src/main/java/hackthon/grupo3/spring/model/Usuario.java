@@ -44,7 +44,7 @@ public class Usuario implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singletonList(
-                new SimpleGrantedAuthority(this.perfil == perfil.ADMIN ? "ROLE_ADMIN" : "ROLE_USER")
+                new SimpleGrantedAuthority(this.perfil == Perfil.ADMIN ? "ROLE_ADMIN" : "ROLE_USER")
         );
     }
 
