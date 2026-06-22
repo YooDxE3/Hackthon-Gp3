@@ -17,4 +17,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     long countByBloqueadoTrue();
     List<Usuario> findAllByOrderByPontuacaoTotalDescPlacaresExatosDesc();
+
+    Optional<Usuario> findByEmailIgnoreCase(String email);
 }

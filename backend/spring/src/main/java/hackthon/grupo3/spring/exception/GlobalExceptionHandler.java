@@ -17,8 +17,18 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(RecursoNaoEncontradoException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND) // 404
-    public Map<String, String> naoEncontrado(RecursoNaoEncontradoException e) {
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, String> naoEncontrado(
+            RecursoNaoEncontradoException e
+    ) {
+        return Map.of("erro", e.getMessage());
+    }
+
+    @ExceptionHandler(TokenRecuperacaoInvalidoException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> tokenInvalido(
+            TokenRecuperacaoInvalidoException e
+    ) {
         return Map.of("erro", e.getMessage());
     }
 }

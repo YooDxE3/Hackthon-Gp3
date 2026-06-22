@@ -85,7 +85,12 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login", "/api/auth/registro").permitAll()
+                        .requestMatchers(
+                                "/api/auth/login",
+                                "/api/auth/registro",
+                                "/api/auth/esqueci-senha",
+                                "/api/auth/redefinir-senha"
+                        ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/partidas/**", "/api/partidas", "/api/ranking/**", "/api/ranking", "/api/selecoes/**", "/api/selecoes").permitAll()
                         .anyRequest().authenticated()
                 )
