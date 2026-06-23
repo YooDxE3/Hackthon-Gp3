@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.Random;
 
 @Service
 public class RecuperacaoSenhaService {
@@ -52,7 +52,8 @@ public class RecuperacaoSenhaService {
 
         TokenResetSenha tokenReset = new TokenResetSenha();
         tokenReset.setUsuario(usuario);
-        tokenReset.setToken(UUID.randomUUID().toString());
+        String codigo = String.format("%06d", new Random().nextInt(1000000));
+        tokenReset.setToken(codigo);
         tokenReset.setExpiraEm(
                 LocalDateTime.now().plusMinutes(expiracaoMinutos)
         );
@@ -67,10 +68,27 @@ public class RecuperacaoSenhaService {
         );
     }
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public void validarCodigo(String token) {
+        TokenResetSenha tokenReset =
+                tokenRepository.findByTokenAndUsadoFalse(token.trim())
+                        .orElseThrow(() ->
+                                new TokenRecuperacaoInvalidoException(
+                                        "Código inválido"
+                                )
+                        );
+
+        if (tokenReset.getExpiraEm().isBefore(LocalDateTime.now())) {
+            throw new TokenRecuperacaoInvalidoException(
+                    "Código expirado. Solicite um novo."
+            );
+        }
+    }
+
     @Transactional
     public void redefinir(String token, String novaSenha) {
         TokenResetSenha tokenReset =
-                tokenRepository.findByTokenAndUsadoFalse(token)
+                tokenRepository.findByTokenAndUsadoFalse(token.trim())
                         .orElseThrow(() ->
                                 new TokenRecuperacaoInvalidoException(
                                         "Token inválido ou já utilizado"

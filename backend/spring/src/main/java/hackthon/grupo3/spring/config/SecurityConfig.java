@@ -89,6 +89,7 @@ public class SecurityConfig {
                                 "/api/auth/login",
                                 "/api/auth/registro",
                                 "/api/auth/esqueci-senha",
+                                "/api/auth/verificar-codigo",
                                 "/api/auth/redefinir-senha"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/partidas/**", "/api/partidas", "/api/ranking/**", "/api/ranking", "/api/selecoes/**", "/api/selecoes").permitAll()

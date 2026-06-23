@@ -41,6 +41,9 @@ public class AuthController {
     public record LoginRequest(String email, String senha) {
     }
 
+    public record VerificarCodigoRequest(String token) {
+    }
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         UsernamePasswordAuthenticationToken authToken =
@@ -86,6 +89,17 @@ public class AuthController {
         return ResponseEntity.ok(Map.of(
                 "mensagem",
                 "Se o e-mail estiver cadastrado, enviaremos as instruções"
+        ));
+    }
+
+    @PostMapping("/verificar-codigo")
+    public ResponseEntity<?> verificarCodigo(
+            @Valid @RequestBody VerificarCodigoRequest request
+    ) {
+        recuperacaoSenhaService.validarCodigo(request.token());
+        return ResponseEntity.ok(Map.of(
+                "mensagem",
+                "Código válido"
         ));
     }
 
