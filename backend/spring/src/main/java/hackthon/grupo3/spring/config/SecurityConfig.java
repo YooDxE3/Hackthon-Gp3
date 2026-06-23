@@ -1,6 +1,7 @@
 package hackthon.grupo3.spring.config;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,6 +36,9 @@ public class SecurityConfig {
 
     @Value("${jwt.secret}")
     private String jwtSecret;
+
+    @Autowired
+    private AcessoNegadoHandler acessoNegadoHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -106,6 +110,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login", "/css/**", "/js/**", "/img/**", "/error").permitAll()
                         .anyRequest().hasRole("ADMIN")
+                )
+                .exceptionHandling(ex -> ex
+                        .accessDeniedHandler(acessoNegadoHandler)
                 )
                 .formLogin(form -> form
                         .loginPage("/login")

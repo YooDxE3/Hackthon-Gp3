@@ -5,15 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Administrativo - Bolão 2026</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-<!--    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>-->
 </head>
 <body>
 <section>
     <style>
-        /* --- APLICAÇÃO DO GUIA DE ESTILOS --- */
+        /* --- APLICAÇÃO DO TEMA CLARO --- */
 
-        /* Centralização exclusiva para Desktop (Margin 0 auto) */
         @media (min-width: 992px) {
             .dash-container {
                 max-width: 1200px;
@@ -23,33 +20,33 @@
 
         /* Superfícies e Textos */
         .card-custom {
-            background-color: #2A1B4E !important; /* Superfície de Cards */
-            border: none;
+            background-color: #F8F9FA !important; /* Branco mais escuro (Off-white/Gelo) */
+            border: 1px solid #E5E7EB; /* Borda sutil para separar do fundo */
         }
 
-        .text-primary-custom { color: #FFFFFF !important; }
-        .text-secondary-custom { color: #E5E7EB !important; }
+        .text-primary-custom { color: #1F2937 !important; } /* Cinza Escuro (Quase Preto) */
+        .text-secondary-custom { color: #6B7280 !important; } /* Cinza Médio */
 
-        /* Paleta Primária e Secundária */
-        .text-cyan { color: #00C2C7 !important; }
+        /* Paleta Primária e Secundária (Textos levemente escurecidos para contraste no fundo claro) */
+        .text-cyan { color: #009B9F !important; }
         .border-cyan { border-left-color: #00C2C7 !important; }
 
-        .text-green { color: #A9D700 !important; }
+        .text-green { color: #83A600 !important; }
         .border-green { border-left-color: #A9D700 !important; }
 
-        .text-orange { color: #FF5A00 !important; }
+        .text-orange { color: #E65000 !important; }
         .border-orange { border-left-color: #FF5A00 !important; }
 
-        .text-magenta { color: #FF007F !important; }
+        .text-magenta { color: #D6006B !important; }
         .border-magenta { border-left-color: #FF007F !important; }
 
-        .text-gold { color: #FFD700 !important; }
-        .text-red { color: #E60000 !important; }
+        .text-gold { color: #D4AF37 !important; } /* Dourado escurecido para não sumir no branco */
+        .text-red { color: #DC2626 !important; }
 
-        /* Card de Perigo (Contas Bloqueadas) */
+        /* Card de Perigo (Contas Bloqueadas) adaptado para tema claro */
         .card-danger-custom {
-            background-color: rgba(230, 0, 0, 0.1) !important;
-            border: 1px solid rgba(230, 0, 0, 0.3) !important;
+            background-color: #FEE2E2 !important; /* Vermelho bem claro */
+            border: 1px solid #FCA5A5 !important;
         }
     </style>
 
@@ -175,7 +172,6 @@
                 return;
             }
 
-            // Função recursiva: verifica a cada 50ms se o Chart.js terminou de baixar
             function renderizarGrafico() {
                 if (typeof Chart === 'undefined') {
                     setTimeout(renderizarGrafico, 50);
@@ -190,7 +186,7 @@
                         datasets: [{
                             data: [agendadas, emAndamento, encerradas],
                             backgroundColor: ['#00C2C7', '#FF5A00', '#A9D700'],
-                            borderColor: '#2A1B4E',
+                            borderColor: '#F8F9FA', /* Borda do gráfico igual à cor do novo card claro */
                             borderWidth: 3,
                             hoverOffset: 8
                         }]
@@ -205,7 +201,7 @@
                                 labels: {
                                     padding: 20,
                                     font: { weight: 'bold' },
-                                    color: '#E5E7EB'
+                                    color: '#6B7280' /* Texto da legenda do gráfico em cinza escuro */
                                 }
                             }
                         }
@@ -213,7 +209,6 @@
                 });
             }
 
-            // Inicia a tentativa de renderização
             renderizarGrafico();
         });
     </script>

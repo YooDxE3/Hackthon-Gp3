@@ -7,19 +7,22 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #1F1135; /* Roxo Escuro Profundo (Background Principal) */
-            color: #FFFFFF; /* Texto Principal */
+            /* Fundo geral da aplicação (Branco Acinzentado) */
+            background-color: #F3F4F6;
+            /* Texto principal padrão passa a ser escuro */
+            color: #1F2937;
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             overflow-x: hidden;
         }
 
+        /* A Navbar foi 100% mantida como o combinado.
+        */
         .navbar {
-            background-color: #2A1B4E; /* Roxo levemente mais claro (Hierarquia de Superfícies) */
+            background-color: #2A1B4E;
             min-height: 70px;
-            border-bottom: 2px solid #00C2C7; /* Linha de destaque em Ciano Vibrante */
+            border-bottom: 2px solid #00C2C7;
         }
 
-        /* Logo fixada absolutamente no centro e no topo */
         .center-logo {
             position: absolute;
             left: 50%;
@@ -40,7 +43,7 @@
         }
 
         .nav-link {
-            color: #E5E7EB !important; /* Texto Secundário (Cinza Claro) */
+            color: #E5E7EB !important;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -50,46 +53,49 @@
         }
 
         .nav-link:hover {
-            color: #00C2C7 !important; /* Ciano Vibrante no Hover */
+            color: #00C2C7 !important;
         }
 
         .nav-link.active {
-            color: #00C2C7 !important; /* Ciano Vibrante na Aba Ativa */
+            color: #00C2C7 !important;
             border-bottom: 2px solid #00C2C7;
         }
 
-        /* --- Customização do Dropdown de Perfil --- */
         .profile-trigger img {
             border: 2px solid #00C2C7;
             transition: transform 0.2s;
         }
+
         .profile-trigger:hover img {
             transform: scale(1.1);
         }
-        /* Remove a setinha padrão do dropdown do Bootstrap para ficar mais limpo */
+
         .dropdown-toggle::after {
             display: none;
         }
+
         .dropdown-menu-custom {
             background-color: #2A1B4E;
             border: 1px solid #334155;
             box-shadow: 0 8px 16px rgba(0,0,0,0.4);
         }
+
         .dropdown-item-custom {
             color: #E5E7EB;
             font-weight: 500;
             padding: 8px 20px;
             transition: all 0.2s;
         }
+
         .dropdown-item-custom:hover {
             background-color: #1F1135;
             color: #00C2C7;
         }
+
         .dropdown-item-custom.text-danger:hover {
             color: #E60000 !important;
         }
 
-        /* No mobile, cria uma separação visual e margem para os links */
         @media (max-width: 991px) {
             #menuPrincipal {
                 margin-top: 15px;

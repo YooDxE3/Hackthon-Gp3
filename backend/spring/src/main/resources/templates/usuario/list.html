@@ -3,16 +3,23 @@
 <body>
 <section>
   <style>
-    /* --- APLICAÇÃO DO GUIA DE ESTILOS --- */
+    /* --- APLICAÇÃO DO TEMA CLARO --- */
     @media (min-width: 992px) {
         .dash-container { max-width: 1200px; margin: 0 auto; }
     }
 
-    .card-custom { background-color: #2A1B4E !important; border: none; border-radius: 12px; }
-    .text-primary-custom { color: #FFFFFF !important; }
-    .text-secondary-custom { color: #E5E7EB !important; }
-    .text-cyan { color: #00C2C7 !important; }
-    .text-green { color: #A9D700 !important; }
+    /* Superfícies e Textos */
+    .card-custom {
+        background-color: #F8F9FA !important;
+        border: 1px solid #E5E7EB;
+        border-radius: 12px;
+    }
+    .text-primary-custom { color: #1F2937 !important; }
+    .text-secondary-custom { color: #6B7280 !important; }
+    .text-cyan { color: #009B9F !important; }
+    .text-green { color: #83A600 !important; }
+
+    .border-cyan { border-color: #009B9F !important; }
 
     /* Botões padronizados */
     .btn-cyan { background-color: #00C2C7; color: #1F1135; font-weight: bold; border: none; transition: 0.2s; }
@@ -21,13 +28,16 @@
     .btn-success-custom { background-color: #A9D700; color: #1F1135; border: none; transition: 0.2s; }
     .btn-success-custom:hover { background-color: #8db500; color: #1F1135; transform: translateY(-2px); }
 
-    .btn-danger-custom { background-color: transparent; border: 1px solid #E60000; color: #E60000; transition: 0.2s; }
-    .btn-danger-custom:hover { background-color: #E60000; color: #FFFFFF; }
+    .btn-danger-custom { background-color: transparent; border: 1px solid #DC2626; color: #DC2626; transition: 0.2s; }
+    .btn-danger-custom:hover { background-color: #DC2626; color: #FFFFFF; }
 
-    /* Box de Informações de Pontuação */
+    .btn-outline-danger { border: 1px solid #DC2626; color: #DC2626; transition: 0.2s; }
+    .btn-outline-danger:hover { background-color: #DC2626; color: #FFFFFF; }
+
+    /* Box de Informações de Pontuação Claro */
     .score-box {
-        background-color: #1F1135;
-        border: 1px solid #334155;
+        background-color: #FFFFFF;
+        border: 1px solid #D1D5DB;
         border-radius: 8px;
         padding: 10px;
     }
@@ -37,11 +47,11 @@
         width: 90px;
         height: 90px;
         border-radius: 50%;
-        border: 3px solid #00C2C7;
+        border: 3px solid #009B9F;
         overflow: hidden;
         margin: 0 auto;
-        background-color: #1F1135;
-        box-shadow: 0 4px 10px rgba(0, 194, 199, 0.3);
+        background-color: #FFFFFF;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     }
     .avatar-container img { width: 100%; height: 100%; object-fit: cover; }
   </style>
@@ -74,49 +84,64 @@
 
           <div class="avatar-container mb-3 mt-2">
             <img th:if="${u.avatarUrl != null and !u.avatarUrl.isEmpty()}" th:src="${u.avatarUrl}" alt="Avatar">
-
             <img th:unless="${u.avatarUrl != null and !u.avatarUrl.isEmpty()}"
-                 th:src="@{'https://ui-avatars.com/api/?name=' + ${u.nome} + '&background=1F1135&color=00C2C7&bold=true&size=150'}"
+                 th:src="@{'https://ui-avatars.com/api/?name=' + ${u.nome} + '&background=F8F9FA&color=009B9F&bold=true&size=150'}"
                  alt="Avatar Placeholder">
           </div>
 
-          <h5 class="fw-bold text-primary-custom mb-1 text-truncate" th:title="${u.nome}" th:text="${u.nome}">Nome do Usuário</h5>
-          <p class="text-secondary-custom small mb-4 text-truncate" th:title="${u.email}" th:text="${u.email}">email@exemplo.com</p>
+          <h5 class="fw-bold text-primary-custom mb-1 text-truncate" th:title="${u.nome}" th:text="${u.nome}">Nome</h5>
+          <p class="text-secondary-custom small mb-4 text-truncate" th:title="${u.email}" th:text="${u.email}">email</p>
 
           <div class="score-box d-flex justify-content-around mb-4">
             <div>
               <div class="small text-secondary-custom text-uppercase fw-bold" style="font-size: 0.7rem;">Pontos</div>
               <div class="fw-bold text-cyan fs-5" th:text="${u.pontuacaoTotal}">0</div>
             </div>
-            <div class="border-end border-secondary"></div>
+            <div class="border-end border-secondary border-opacity-25"></div>
             <div>
               <div class="small text-secondary-custom text-uppercase fw-bold" style="font-size: 0.7rem;">Cravados</div>
               <div class="fw-bold text-green fs-5" th:text="${u.placaresExatos}">0</div>
             </div>
           </div>
 
+          <!-- BLOCO ÚNICO DE AÇÕES CORRIGIDO -->
           <div class="mt-auto">
 
+            <!-- Caso 1: Próprio usuário logado -->
             <div th:if="${#authentication.name == u.email}" class="text-secondary-custom small fst-italic py-2 border border-secondary rounded-pill border-opacity-25">
               Seu Perfil Atual
             </div>
 
-            <div th:if="${#authentication.name != u.email and u.perfil.name() == 'ADMIN'}" class="text-cyan small fw-bold py-2 border border-cyan rounded-pill border-opacity-25">
-              Administrador
+            <!-- Caso 2: Outros usuários -->
+            <div th:if="${#authentication.name != u.email}">
+
+              <!-- Aviso de Administrador -->
+              <div th:if="${u.perfil.name() == 'ADMIN'}" class="text-cyan small fw-bold py-2 border border-cyan rounded-pill border-opacity-25 mb-2">
+                Administrador
+              </div>
+
+              <div class="d-flex gap-2 w-100 mt-2">
+                <!-- Form de Bloqueio (Só renderiza para USER) -->
+                <form th:if="${u.perfil.name() == 'USER'}" th:action="@{/usuarios/{id}/bloqueio(id=${u.id})}" method="post" class="flex-grow-1 m-0">
+                  <button type="submit"
+                          class="btn w-100 rounded-pill fw-bold py-2 small"
+                          th:classappend="${u.bloqueado ? 'btn-success-custom' : 'btn-danger-custom'}"
+                          th:text="${u.bloqueado ? 'Desbloquear' : 'Bloquear'}">
+                  </button>
+                </form>
+
+                <!-- Botão de Excluir que aciona o Modal Customizado -->
+                <button type="button"
+                        class="btn btn-outline-danger rounded-pill fw-bold py-2 px-3"
+                        th:classappend="${u.perfil.name() == 'ADMIN' ? 'w-100' : ''}"
+                        th:attr="onclick=|abrirModalExclusao('${u.id}', '${u.nome}')|">
+                  Excluir
+                </button>
+              </div>
             </div>
 
-            <form th:if="${#authentication.name != u.email and u.perfil.name() == 'USER'}"
-                  th:action="@{/usuarios/{id}/bloqueio(id=${u.id})}"
-                  method="post" class="w-100">
-
-              <button type="submit"
-                      class="btn w-100 rounded-pill fw-bold py-2"
-                      th:classappend="${u.bloqueado ? 'btn-success-custom' : 'btn-danger-custom'}"
-                      th:text="${u.bloqueado ? 'Desbloquear Palpites' : 'Bloquear Palpites'}">
-              </button>
-            </form>
-
           </div>
+          <!-- FIM DO BLOCO DE AÇÕES -->
 
         </div>
       </div>
@@ -124,6 +149,37 @@
     </div>
 
   </div>
+
+  <!-- MODAL CUSTOMIZADO DE EXCLUSÃO -->
+  <div class="modal fade" id="modalExclusao" tabindex="-1" aria-labelledby="modalExclusaoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="background-color: #F8F9FA; border: 1px solid #E5E7EB; border-radius: 12px;">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title text-danger fw-bold" id="modalExclusaoLabel">Atenção</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body text-primary-custom">
+          Tem certeza que deseja excluir permanentemente o usuário <strong id="nomeUsuarioModal"></strong> e todos os seus dados?<br><br>Esta ação não poderá ser desfeita.
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+          <a href="#" id="btnConfirmarExclusao" class="btn btn-danger rounded-pill px-4 fw-bold">Sim, Excluir</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Função para alimentar e abrir o modal de exclusão
+    function abrirModalExclusao(id, nome) {
+        document.getElementById('nomeUsuarioModal').textContent = nome;
+        document.getElementById('btnConfirmarExclusao').href = '/usuarios/remover/' + id;
+
+        var modal = new bootstrap.Modal(document.getElementById('modalExclusao'));
+        modal.show();
+    }
+  </script>
+
 </section>
 </body>
 </html>

@@ -5,30 +5,43 @@
     <style>
         @media (min-width: 992px) { .dash-container { max-width: 800px; margin: 0 auto; } }
 
-        .card-custom { background-color: #2A1B4E !important; border: none; border-radius: 12px; }
-        .text-primary-custom { color: #FFFFFF !important; }
-        .text-secondary-custom { color: #E5E7EB !important; }
+        /* Superfícies e Textos (Tema Claro) */
+        .card-custom {
+            background-color: #F8F9FA !important;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+        }
 
+        .text-primary-custom { color: #1F2937 !important; } /* Cinza Escuro */
+        .text-secondary-custom { color: #6B7280 !important; } /* Cinza Médio */
+
+        /* Inputs claros com borda Ciano no foco */
         .form-control-custom, .form-select-custom {
-            background-color: #1F1135;
-            border: 1px solid #334155;
-            color: #FFFFFF;
+            background-color: #FFFFFF;
+            border: 1px solid #D1D5DB;
+            color: #1F2937;
             border-radius: 8px;
             padding: 12px;
         }
-        .form-control-custom:focus, .form-select-custom:focus {
-            background-color: #1F1135;
-            color: #FFFFFF;
-            border-color: #00C2C7;
-            box-shadow: none;
-        }
-        .form-control-custom::placeholder { color: #64748b; }
 
+        .form-control-custom:focus, .form-select-custom:focus {
+            background-color: #FFFFFF;
+            color: #1F2937;
+            border-color: #009B9F;
+            box-shadow: 0 0 0 0.25rem rgba(0, 194, 199, 0.15);
+            outline: none;
+        }
+
+        .form-control-custom::placeholder {
+            color: #9CA3AF;
+        }
+
+        /* Botões */
         .btn-success-custom { background-color: #A9D700; color: #1F1135; font-weight: bold; border: none; transition: 0.2s;}
         .btn-success-custom:hover { background-color: #8db500; color: #1F1135; transform: translateY(-2px); }
 
-        .btn-secondary-custom { background-color: transparent; border: 1px solid #E5E7EB; color: #E5E7EB; transition: 0.2s;}
-        .btn-secondary-custom:hover { background-color: #E5E7EB; color: #1F1135; }
+        .btn-secondary-custom { background-color: transparent; border: 1px solid #6B7280; color: #6B7280; transition: 0.2s;}
+        .btn-secondary-custom:hover { background-color: #6B7280; color: #FFFFFF; }
     </style>
 
     <div class="dash-container">

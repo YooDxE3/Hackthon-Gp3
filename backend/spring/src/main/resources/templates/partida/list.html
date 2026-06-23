@@ -5,38 +5,47 @@
     <style>
         @media (min-width: 992px) { .dash-container { max-width: 1200px; margin: 0 auto; } }
 
-        .card-custom { background-color: #2A1B4E !important; border: none; border-radius: 12px; }
-        .text-primary-custom { color: #FFFFFF !important; }
-        .text-secondary-custom { color: #E5E7EB !important; }
-        .text-cyan { color: #00C2C7 !important; }
+        /* Superfícies e Textos (Tema Claro) */
+        .card-custom {
+            background-color: #F8F9FA !important;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+        }
+        .text-primary-custom { color: #1F2937 !important; } /* Cinza Escuro */
+        .text-secondary-custom { color: #6B7280 !important; } /* Cinza Médio */
+        .text-cyan { color: #009B9F !important; } /* Ciano adaptado */
 
+        /* Botões */
         .btn-cyan { background-color: #00C2C7; color: #1F1135; font-weight: bold; border: none; }
         .btn-cyan:hover { background-color: #009b9f; color: #1F1135; }
 
-        .btn-edit { background-color: transparent; border: 1px solid #00C2C7; color: #00C2C7; transition: 0.2s; }
-        .btn-edit:hover { background-color: #00C2C7; color: #1F1135; }
+        .btn-edit { background-color: transparent; border: 1px solid #009B9F; color: #009B9F; transition: 0.2s; }
+        .btn-edit:hover { background-color: #009B9F; color: #FFFFFF; }
 
-        .btn-delete { background-color: transparent; border: 1px solid #E60000; color: #E60000; transition: 0.2s; }
-        .btn-delete:hover { background-color: #E60000; color: #FFFFFF; }
+        .btn-delete { background-color: transparent; border: 1px solid #DC2626; color: #DC2626; transition: 0.2s; }
+        .btn-delete:hover { background-color: #DC2626; color: #FFFFFF; }
 
-        .btn-result { background-color: transparent; border: 1px solid #FFD700; color: #FFD700; transition: 0.2s; }
-        .btn-result:hover { background-color: #FFD700; color: #1F1135; }
+        /* Dourado mais escuro para garantir leitura no fundo branco */
+        .btn-result { background-color: transparent; border: 1px solid #D4AF37; color: #D4AF37; transition: 0.2s; font-weight: 600;}
+        .btn-result:hover { background-color: #D4AF37; color: #FFFFFF; }
 
+        /* Container do Placar e Bandeiras */
         .match-container {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background-color: #1F1135;
+            background-color: #FFFFFF; /* Fundo branco interno */
             border-radius: 8px;
             padding: 15px;
             margin-bottom: 15px;
-            border: 1px solid #334155;
+            border: 1px solid #E5E7EB;
         }
 
         .flag-box {
             width: 60px;
             height: 40px;
-            background-color: #2A1B4E;
+            background-color: #F8F9FA;
+            border: 1px solid #D1D5DB;
             border-radius: 4px;
             overflow: hidden;
             display: flex;
@@ -47,7 +56,7 @@
         .flag-box img { width: 100%; height: 100%; object-fit: cover; }
 
         .team-name {
-            color: #FFFFFF;
+            color: #1F2937; /* Cor escura do tema claro */
             font-size: 0.85rem;
             font-weight: 600;
             text-align: center;
@@ -55,18 +64,26 @@
             text-transform: uppercase;
         }
 
+        /* Barra de Filtros Clara */
         .filter-bar {
-            background-color: #2A1B4E;
+            background-color: #F8F9FA;
+            border: 1px solid #E5E7EB;
             border-radius: 8px;
             padding: 15px;
             margin-bottom: 25px;
         }
-        .form-control-dark {
-            background-color: #1F1135;
-            border: 1px solid #334155;
-            color: #FFFFFF;
+        .form-control-light {
+            background-color: #FFFFFF;
+            border: 1px solid #D1D5DB;
+            color: #1F2937;
         }
-        .form-control-dark:focus { background-color: #1F1135; color: #FFFFFF; border-color: #00C2C7; box-shadow: none;}
+        .form-control-light:focus {
+            background-color: #FFFFFF;
+            color: #1F2937;
+            border-color: #009B9F;
+            box-shadow: 0 0 0 0.25rem rgba(0, 194, 199, 0.15);
+            outline: none;
+        }
     </style>
 
     <div class="dash-container">
@@ -76,11 +93,11 @@
             <a th:href="@{/partidas/novo}" class="btn btn-cyan rounded-pill px-4">Nova Partida</a>
         </div>
 
-        <form th:action="@{/partidas}" method="get" class="filter-bar d-flex flex-column flex-lg-row gap-4 align-items-lg-center">
+        <form th:action="@{/partidas}" method="get" class="filter-bar d-flex flex-column flex-lg-row gap-4 align-items-lg-center shadow-sm">
 
             <div class="d-flex align-items-center gap-2">
                 <label for="fase" class="text-secondary-custom fw-bold mb-0">Fase:</label>
-                <select name="fase" id="fase" class="form-select form-control-dark w-auto">
+                <select name="fase" id="fase" class="form-select form-control-light w-auto">
                     <option value="">Todas</option>
                     <option th:each="f : ${fases}" th:value="${f}" th:text="${f.descricao}" th:selected="${paramFase != null and paramFase.name() == f.name()}"></option>
                 </select>
@@ -88,7 +105,7 @@
 
             <div class="d-flex align-items-center gap-2">
                 <label for="status" class="text-secondary-custom fw-bold mb-0">Status:</label>
-                <select name="status" id="status" class="form-select form-control-dark w-auto">
+                <select name="status" id="status" class="form-select form-control-light w-auto">
                     <option value="" th:selected="${paramStatus == null}">Todos</option>
                     <option value="AGENDADA" th:selected="${paramStatus?.name() == 'AGENDADA'}">Agendadas</option>
                     <option value="EM_ANDAMENTO" th:selected="${paramStatus?.name() == 'EM_ANDAMENTO'}">Em Andamento</option>
@@ -98,7 +115,7 @@
 
             <div class="d-flex align-items-center gap-2 flex-grow-1">
                 <label for="paisId" class="text-secondary-custom fw-bold mb-0">País:</label>
-                <select name="paisId" id="paisId" class="form-select form-control-dark w-100">
+                <select name="paisId" id="paisId" class="form-select form-control-light w-100">
                     <option value="">Todos os Países</option>
                     <option th:each="s : ${selecoes}" th:value="${s.id}" th:text="${s.nome}" th:selected="${paramPais == s.id}"></option>
                 </select>

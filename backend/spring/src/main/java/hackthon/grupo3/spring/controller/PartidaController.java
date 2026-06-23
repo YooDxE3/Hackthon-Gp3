@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -30,7 +31,6 @@ public class PartidaController {
             @RequestParam(required = false) StatusPartida status,
             Model model) {
 
-        // Agora a pesquisa permite cruzar País + Fase + Status de uma só vez
         List<Partida> partidas = service.filtrarPartidas(paisId, fase, status);
 
         model.addAttribute("partidas", partidas);
@@ -62,7 +62,21 @@ public class PartidaController {
     }
 
     @PostMapping("/salvar")
-    public String salvar(Partida partida, Model model) {
+    public String salvar(Partida partida, RedirectAttributes attributes) {
+
+        if (partida.getMandante() != null && partida.getVisitante() != null) {
+            if (partida.getMandante().getId().equals(partida.getVisitante().getId())) {
+
+                attributes.addFlashAttribute("erroValidacao", "Não é possível criar uma partida onde as duas seleções são iguais.");
+
+                if (partida.getId() != null) {
+                    return "redirect:/partidas/" + partida.getId();
+                } else {
+                    return "redirect:/partidas/novo";
+                }
+            }
+        }
+
         service.salvar(partida);
         return "redirect:/partidas";
     }

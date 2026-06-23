@@ -178,11 +178,14 @@
             <div th:if="${param.logout}" class="alert alert-success py-2 border-0 rounded-3">
                 Sessão encerrada com sucesso.
             </div>
+            <div th:if="${param.acessonegado}" class="alert alert-danger text-center">
+                <strong>Acesso Negado!</strong> Você não tem permissão para aceder ao Painel Administrativo.
+            </div>
 
             <form th:action="@{/login}" method="post">
                 <div class="mb-3">
                     <label for="username" class="form-label">E-mail</label>
-                    <input type="email" class="form-control form-control-lg" id="username" name="username" required autofocus placeholder="exemplo@unialfa.edu.br">
+                    <input type="email" class="form-control form-control-lg" id="username" name="username" required autofocus placeholder="seuEmail@e-mail.com">
                 </div>
 
                 <div class="mb-4">

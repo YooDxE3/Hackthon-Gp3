@@ -5,46 +5,61 @@
     <style>
         @media (min-width: 992px) { .dash-container { max-width: 800px; margin: 0 auto; } }
 
-        .card-custom { background-color: #2A1B4E !important; border: none; border-radius: 12px; }
-        .text-primary-custom { color: #FFFFFF !important; }
-        .text-secondary-custom { color: #E5E7EB !important; }
-        .text-cyan { color: #00C2C7 !important; }
+        /* Superfícies e Textos (Tema Claro) */
+        .card-custom {
+            background-color: #F8F9FA !important;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+        }
 
+        .text-primary-custom { color: #1F2937 !important; }
+        .text-secondary-custom { color: #6B7280 !important; }
+        .text-cyan { color: #009B9F !important; }
+
+        /* Inputs claros com borda Ciano no foco */
         .form-control-custom {
-            background-color: #1F1135;
-            border: 1px solid #334155;
-            color: #FFFFFF;
+            background-color: #FFFFFF;
+            border: 1px solid #D1D5DB;
+            color: #1F2937;
             border-radius: 8px;
             padding: 12px;
         }
         .form-control-custom:focus {
-            background-color: #1F1135;
-            color: #FFFFFF;
-            border-color: #00C2C7;
-            box-shadow: none;
+            background-color: #FFFFFF;
+            color: #1F2937;
+            border-color: #009B9F;
+            box-shadow: 0 0 0 0.25rem rgba(0, 194, 199, 0.15);
+            outline: none;
         }
         .form-control-custom:disabled {
-            background-color: #150b24;
-            border-color: #232d3f;
-            color: #64748b;
+            background-color: #E5E7EB;
+            border-color: #D1D5DB;
+            color: #9CA3AF;
+        }
+        .form-control-custom::placeholder {
+            color: #9CA3AF;
         }
 
+        /* Botões */
         .btn-success-custom { background-color: #A9D700; color: #1F1135; font-weight: bold; border: none; transition: 0.2s;}
         .btn-success-custom:hover { background-color: #8db500; color: #1F1135; transform: translateY(-2px); }
 
-        .btn-secondary-custom { background-color: transparent; border: 1px solid #E5E7EB; color: #E5E7EB; transition: 0.2s;}
-        .btn-secondary-custom:hover { background-color: #E5E7EB; color: #1F1135; }
+        .btn-secondary-custom { background-color: transparent; border: 1px solid #6B7280; color: #6B7280; transition: 0.2s;}
+        .btn-secondary-custom:hover { background-color: #6B7280; color: #FFFFFF; }
 
-        /* Preview da Foto do Perfil */
+        .btn-outline-danger { border: 1px solid #DC2626; color: #DC2626; transition: 0.2s; }
+        .btn-outline-danger:hover { background-color: #DC2626; color: #FFFFFF; }
+
+        /* Preview da Foto do Perfil Claro */
         .profile-preview-container {
             width: 120px;
             height: 120px;
             border-radius: 50%;
-            border: 4px solid #00C2C7;
+            border: 4px solid #009B9F;
             overflow: hidden;
             margin: 0 auto 20px auto;
-            background-color: #1F1135;
-            box-shadow: 0 4px 15px rgba(0, 194, 199, 0.4);
+            background-color: #FFFFFF;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
         }
         .profile-preview-container img { width: 100%; height: 100%; object-fit: cover; }
     </style>
@@ -64,7 +79,7 @@
                     <div class="text-center mb-4">
                         <div class="profile-preview-container">
                             <img id="avatarPreview"
-                                 th:src="*{avatarUrl != null and !avatarUrl.isEmpty()} ? *{avatarUrl} : @{'https://ui-avatars.com/api/?name=' + *{nome} + '&background=1F1135&color=00C2C7&bold=true&size=150'}"
+                                 th:src="*{avatarUrl != null and !avatarUrl.isEmpty()} ? *{avatarUrl} : @{'https://ui-avatars.com/api/?name=' + *{nome} + '&background=F8F9FA&color=009B9F&bold=true&size=150'}"
                                  alt="Preview do Avatar">
                         </div>
                         <p class="text-secondary-custom small">Visualização da sua foto de perfil</p>
@@ -100,6 +115,39 @@
 
                 </form>
 
+                <div class="mt-5 pt-4 border-top border-secondary border-opacity-25 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                    <div>
+                        <h6 class="text-danger fw-bold mb-1">Excluir conta</h6>
+                        <p class="text-secondary-custom small mb-0">Exclui permanentemente sua conta e revoga o acesso administrativo.</p>
+                    </div>
+                    <!-- Botão que abre o Modal -->
+                    <button type="button" class="btn btn-outline-danger rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#modalExcluirPerfil">
+                        Excluir Minha Conta
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CUSTOMIZADO PARA EXCLUSÃO DO PRÓPRIO PERFIL -->
+    <div class="modal fade" id="modalExcluirPerfil" tabindex="-1" aria-labelledby="modalExcluirPerfilLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background-color: #F8F9FA; border: 1px solid #E5E7EB; border-radius: 12px;">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title text-danger fw-bold" id="modalExcluirPerfilLabel">Atenção</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body text-primary-custom">
+                    Tem certeza absoluta que deseja excluir sua conta? Esta ação apagará todos os seus dados e encerrará sua sessão atual.<br><br>Esta ação não poderá ser desfeita.
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <!-- O form de exclusão foi movido para cá -->
+                    <form th:action="@{/usuarios/perfil/excluir}" method="post" class="m-0">
+                        <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">Sim, Excluir</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -115,9 +163,8 @@
                 if(url !== "") {
                     avatarPreview.src = url;
                 } else {
-                    // Se apagar a URL volta para o gerador de iniciais automático
                     const nome = encodeURIComponent(inputNome.value) || "User";
-                    avatarPreview.src = `https://ui-avatars.com/api/?name=${nome}&background=1F1135&color=00C2C7&bold=true&size=150`;
+                    avatarPreview.src = `https://ui-avatars.com/api/?name=${nome}&background=F8F9FA&color=009B9F&bold=true&size=150`;
                 }
             });
         });

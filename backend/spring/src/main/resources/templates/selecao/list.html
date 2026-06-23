@@ -7,37 +7,62 @@
         .dash-container { max-width: 1200px; margin: 0 auto; }
     }
 
-    .card-custom { background-color: #2A1B4E !important; border: none; border-radius: 12px; }
-    .text-primary-custom { color: #FFFFFF !important; }
-    .text-secondary-custom { color: #E5E7EB !important; }
-    .text-cyan { color: #00C2C7 !important; }
+    /* Superfícies e Textos (Tema Claro) */
+    .card-custom {
+        background-color: #F8F9FA !important;
+        border: 1px solid #E5E7EB;
+        border-radius: 12px;
+    }
+
+    .text-primary-custom { color: #1F2937 !important; } /* Cinza Escuro */
+    .text-secondary-custom { color: #6B7280 !important; } /* Cinza Médio */
+    .text-cyan { color: #009B9F !important; } /* Ciano adaptado para fundo claro */
 
     .btn-cyan { background-color: #00C2C7; color: #1F1135; font-weight: bold; border: none; }
     .btn-cyan:hover { background-color: #009b9f; color: #1F1135; }
 
-    .btn-edit { background-color: transparent; border: 1px solid #00C2C7; color: #00C2C7; transition: all 0.2s; }
-    .btn-edit:hover { background-color: #00C2C7; color: #1F1135; }
+    .btn-edit { background-color: transparent; border: 1px solid #009B9F; color: #009B9F; transition: all 0.2s; }
+    .btn-edit:hover { background-color: #009B9F; color: #FFFFFF; }
 
-    .btn-delete { background-color: transparent; border: 1px solid #E60000; color: #E60000; transition: all 0.2s; }
-    .btn-delete:hover { background-color: #E60000; color: #FFFFFF; }
+    .btn-delete { background-color: transparent; border: 1px solid #DC2626; color: #DC2626; transition: all 0.2s; }
+    .btn-delete:hover { background-color: #DC2626; color: #FFFFFF; }
 
+    /* Container da Bandeira ajustado para fundo claro */
     .flag-container {
         width: 110px;
         height: 75px;
-        background-color: #1F1135;
+        background-color: #FFFFFF;
         border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
         overflow: hidden;
-        border: 1px solid #334155;
+        border: 1px solid #D1D5DB;
     }
     .flag-container img { width: 100%; height: 100%; object-fit: cover; }
 
-    /* Estilo da Barra de Filtros */
-    .filter-bar { background-color: #2A1B4E; border-radius: 8px; padding: 15px; margin-bottom: 25px; }
-    .form-control-dark { background-color: #1F1135; border: 1px solid #334155; color: #FFFFFF; }
-    .form-control-dark:focus { background-color: #1F1135; color: #FFFFFF; border-color: #00C2C7; box-shadow: none;}
+    /* Estilo da Barra de Filtros Clara */
+    .filter-bar {
+        background-color: #F8F9FA;
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 25px;
+    }
+
+    /* Inputs do filtro claros */
+    .form-control-light {
+        background-color: #FFFFFF;
+        border: 1px solid #D1D5DB;
+        color: #1F2937;
+    }
+    .form-control-light:focus {
+        background-color: #FFFFFF;
+        color: #1F2937;
+        border-color: #009B9F;
+        box-shadow: 0 0 0 0.25rem rgba(0, 194, 199, 0.15);
+        outline: none;
+    }
   </style>
 
   <div class="dash-container">
@@ -47,11 +72,11 @@
       <a th:href="@{/selecoes/novo}" class="btn btn-cyan rounded-pill px-4">Novo</a>
     </div>
 
-    <form th:action="@{/selecoes}" method="get" class="filter-bar d-flex flex-column flex-md-row gap-4 align-items-md-center">
+    <form th:action="@{/selecoes}" method="get" class="filter-bar d-flex flex-column flex-md-row gap-4 align-items-md-center shadow-sm">
 
       <div class="d-flex align-items-center gap-2">
         <label for="grupo" class="text-secondary-custom fw-bold mb-0">Grupo:</label>
-        <select name="grupo" id="grupo" class="form-select form-control-dark w-auto">
+        <select name="grupo" id="grupo" class="form-select form-control-light w-auto">
           <option value="">Todos os Grupos</option>
           <option th:each="g : ${grupos}" th:value="${g}" th:text="'Grupo ' + ${g}" th:selected="${paramGrupo != null and paramGrupo.name() == g.name()}"></option>
         </select>
@@ -59,7 +84,7 @@
 
       <div class="d-flex align-items-center gap-2 flex-grow-1">
         <label for="ordem" class="text-secondary-custom fw-bold mb-0">Ordenação:</label>
-        <select name="ordem" id="ordem" class="form-select form-control-dark w-auto">
+        <select name="ordem" id="ordem" class="form-select form-control-light w-auto">
           <option value="ASC" th:selected="${paramOrdem == 'ASC'}">Grupo (A a Z)</option>
           <option value="DESC" th:selected="${paramOrdem == 'DESC'}">Grupo (Z a A)</option>
         </select>

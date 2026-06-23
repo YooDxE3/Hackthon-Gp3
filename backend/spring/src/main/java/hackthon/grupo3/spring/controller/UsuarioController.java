@@ -2,11 +2,14 @@ package hackthon.grupo3.spring.controller;
 
 import hackthon.grupo3.spring.model.Usuario;
 import hackthon.grupo3.spring.service.UsuarioService;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import javax.print.attribute.standard.PrinterInfo;
 import java.security.Principal;
 
 @Controller
@@ -31,14 +34,20 @@ public class UsuarioController {
         return "redirect:/usuarios";
     }
 
-    @PreAuthorize("hasHole('ADMIN')")
+    @GetMapping("/remover/{id}")
+    public String removerUsuario(@PathVariable Long id) {
+        usuarioService.remover(id);
+        return "redirect:/usuarios";
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/novo")
     public String abrirFormulario(Model model) {
         model.addAttribute("usuario", new Usuario());
         return "usuario/form";
     }
 
-    @PreAuthorize("hasHole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/salvar")
     public String salvar(Usuario usuario) {
         usuarioService.salvar(usuario);
@@ -70,5 +79,15 @@ public class UsuarioController {
         } catch (Exception e) {
             return "redirect:/usuarios/perfil?error";
         }
+    }
+
+    @PostMapping("/perfil/excluir")
+    public String excluirMinhaConta(Principal principal, HttpServletRequest request) throws ServletException {
+        Usuario usuario = (Usuario) usuarioService.loadUserByUsername(principal.getName());
+
+        usuarioService.remover(usuario.getId());
+        request.logout();
+
+        return "redirect:/login?excluido";
     }
 }
