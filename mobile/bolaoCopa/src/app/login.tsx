@@ -18,14 +18,11 @@ export default function LoginScreen() {
     }
 
     function esqueciMinhaSenha() {
-        Alert.alert(
-            "Recuperação de Senha", 
-            "Funcionalidade não implementada no servidor ainda. Solicite ao administrador a redefinição de senha."
-        );
+        router.push("/esqueci-senha");
     }
 
     async function clicouEmlogar() {
-        setErrorMessage(""); // Limpa o erro anterior
+        setErrorMessage(""); 
 
         if (!email) {
             setErrorMessage("E-mail é obrigatório.");

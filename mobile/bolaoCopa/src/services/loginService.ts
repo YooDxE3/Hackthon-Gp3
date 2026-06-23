@@ -28,3 +28,21 @@ export async function sairDaConta() {
     await AsyncStorage.removeItem('jwt_token');
     await AsyncStorage.removeItem('user_email');
 }
+
+export async function solicitarRecuperacaoSenha(email:string) {
+    try{
+        const resposta = await api.post("/auth/esqueci-senha", { email });
+        return resposta.data
+    }   catch (error) {
+        throw error;
+    }
+}
+
+export async function redefinirSenha(token: string, novaSenha: string) {
+    try{
+        const resposta = await api.post ("/auth/redefinir-senha", { token, novaSenha});
+        return resposta.data
+    } catch (error) {
+        throw error;
+    }
+}
