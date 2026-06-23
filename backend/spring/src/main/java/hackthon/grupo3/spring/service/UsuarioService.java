@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -107,6 +108,13 @@ public class UsuarioService implements UserDetailsService {
         Usuario usuario = buscarPorId(id);
         usuario.setBloqueado(!usuario.getBloqueado());
         usuarioRepository.save(usuario);
+    }
+
+    public void registrarAcesso(String email) {
+        usuarioRepository.findByEmail(email).ifPresent(usuario -> {
+            usuario.setUltimoAcesso(LocalDateTime.now());
+            usuarioRepository.save(usuario);
+        });
     }
 
 }

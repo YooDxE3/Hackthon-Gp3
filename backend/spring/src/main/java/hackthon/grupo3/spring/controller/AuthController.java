@@ -55,6 +55,8 @@ public class AuthController {
         Authentication authentication =
                 authenticationManager.authenticate(authToken);
 
+        usuarioService.registrarAcesso(authentication.getName());
+
         String token = tokenService.gerarToken(authentication);
 
         return ResponseEntity.ok(Map.of("token", token));

@@ -1,10 +1,12 @@
 package hackthon.grupo3.spring.config;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import hackthon.grupo3.spring.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -40,10 +42,9 @@ public class SecurityConfig {
     @Autowired
     private AcessoNegadoHandler acessoNegadoHandler;
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+    @Autowired
+    @Lazy
+    private UsuarioService usuarioService;
 
     @Bean
     public JwtEncoder jwtEncoder() {
@@ -117,7 +118,10 @@ public class SecurityConfig {
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .defaultSuccessUrl("/dashboard", true)
+                        .successHandler((request, response, authentication) -> {
+                            usuarioService.registrarAcesso(authentication.getName());
+                            response.sendRedirect("/dashboard");
+                        })
                         .permitAll()
                 )
                 .logout(logout -> logout
